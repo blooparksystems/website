@@ -1,3 +1,7 @@
+<img class="oe_picture" alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.svg">
+[![Build Status](https://travis-ci.org/blooparksystems/website.svg?branch=8.0)](https://travis-ci.org/blooparksystems/website)
+
+
 bloopark
 ========
 
