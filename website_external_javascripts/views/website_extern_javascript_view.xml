@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data>
+
+    <record model="ir.ui.view" id="view_website_extern_javascript_tree">
+      <field name="name">website.extern.javascript.tree</field>
+      <field name="model">website.extern.javascript</field>
+      <field name="arch" type="xml">
+        <tree string="Extern JavaScript">
+          <field name="activated"/>
+          <field name="sequence"/>
+          <field name="description"/>
+          <field name="type"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_website_extern_javascript_form">
+      <field name="name">website.extern.javascript.from</field>
+      <field name="model">website.extern.javascript</field>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <form string="Extern JavaScript">
+          <sheet>
+            <group>
+              <field name="activated"/>
+              <field name="description"/>
+            </group>
+            <group>
+              <field name="sequence"/>
+              <field name="type"/>
+            </group>
+            <group>
+              <field name="url" attrs="{'invisible': [('type', '!=', 'url')]}"/>
+              <field name="code" attrs="{'invisible': [('type', '!=', 'code')]}"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_website_extern_javascript">
+      <field name="name">Extern JavaScript</field>
+      <field name="res_model">website.extern.javascript</field>
+      <field name="view_type">form</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Extern JavaScript"
+              id="menu_website_extern_javascript"
+              action="action_website_extern_javascript"
+              parent="base.menu_config"/>
+
+  </data>
+</openerp>

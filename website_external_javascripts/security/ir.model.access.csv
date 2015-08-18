@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_javascript_public,website.extern.javascript,website_external_javascripts.model_website_extern_javascript,,1,0,0,0
+access_javascript,website.extern.javascript,website_external_javascripts.model_website_extern_javascript,base.group_website_designer,1,1,1,1
