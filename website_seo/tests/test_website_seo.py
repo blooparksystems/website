@@ -27,7 +27,7 @@ class TestWebsiteSeo(common.TransactionCase):
     """Unit tests about website SEO url validation."""
 
     at_install = False
-    post_install = True
+    post_install = False
 
     def test_00_website_seo(self):
         """----- Test valid SEO url."""

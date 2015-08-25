@@ -27,7 +27,7 @@ class TestWebsiteBlogSeo(common.TransactionCase):
     """Unit tests about website blog management with SEO urls."""
 
     at_install = False
-    post_install = True
+    post_install = False
 
     def setUp(self):
         """setUp with one blog and one blog post."""
