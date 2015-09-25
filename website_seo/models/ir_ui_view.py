@@ -53,31 +53,16 @@ class View(models.Model):
         '"/ecommerce/study/how-to-do-it-right".'
     )
 
-    @api.multi
-    def writeToDo(self, vals):
-        # ToDo: add automatically setup of the field seo_url_level when the
-        # seo_url_parent is changed, maybe use an onchange event instead of the
-        # write() function
-        # old_seo_url_parent = False
-        # check_views = False
-        if 'seo_url_parent' in vals:
-            # check_views = True
-            if vals['seo_url_parent']:
-                parent = self.browse(vals['seo_url_parent'])
-                vals['seo_url_level'] = parent.seo_url_level + 1
-                # old_seo_url_parent = parent
-            else:
-                # if self.seo_url_parent:
-                    # old_seo_url_parent = self.seo_url_parent
-                vals['seo_url_level'] = 0
-
-        res = super(View, self).write(vals)
+    @api.onchange('seo_url_parent')
+    def onchange_seo_url_parent(self):
+        url_level = 0
+        if self.seo_url_parent:
+            url_level = self.seo_url_parent.seo_url_level + 1
+        self.seo_url_level = url_level
 
         # ToDo: update all related views with the correct seo_url_level and
         # seo_url_parent
         # if old_seo_url_parent:
-
-        return res
 
     @api.cr_uid_ids_context
     def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb',
