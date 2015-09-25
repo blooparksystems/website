@@ -52,6 +52,7 @@ class View(models.Model):
         '"how-to-do-it-right" is rendered when calling '
         '"/ecommerce/study/how-to-do-it-right".'
     )
+    seo_url_children = fields.One2many('ir.ui.view', 'seo_url_parent', 'SEO Children')
 
     @api.onchange('seo_url_parent')
     def onchange_seo_url_parent(self):
@@ -60,9 +61,18 @@ class View(models.Model):
             url_level = self.seo_url_parent.seo_url_level + 1
         self.seo_url_level = url_level
 
-        # ToDo: update all related views with the correct seo_url_level and
-        # seo_url_parent
-        # if old_seo_url_parent:
+    @api.multi
+    def write(self, vals):
+        res = super(View, self).write(vals)
+        if 'seo_url_parent' in vals or 'seo_url_level' in vals:
+            self.update_related_views()
+        return res
+
+    @api.multi
+    def update_related_views(self):
+        for obj in self:
+            if obj.seo_url_children:
+                obj.seo_url_children.write({'seo_url_level': obj.seo_url_level + 1})
 
     @api.cr_uid_ids_context
     def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb',
