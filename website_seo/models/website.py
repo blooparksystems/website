@@ -73,13 +73,20 @@ class WebsiteMenu(models.Model):
             try:
                 view = self.env.ref(xml_id)
             except:
+                # don't care about other modules menu entries
                 pass
         return view
-    
+
+    @api.model
+    def create(self, vals):
+        obj = super(WebsiteMenu, self).create(vals)
+        obj.update_related_views()
+        return obj
+
     @api.multi
     def write(self, vals):
         res = super(WebsiteMenu, self).write(vals)
-        if vals.get('parent_id', False):
+        if vals.get('parent_id', False) or vals.get('url', False):
             self.update_related_views()
         return res
 
