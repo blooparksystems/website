@@ -52,6 +52,50 @@ class WebsiteMenu(models.Model):
     _inherit = 'website.menu'
 
     url = fields.Char(translate=True)
+    seo_url_level = fields.Integer(compute='_get_seo_url_level',
+                                   string='SEO URL level')
+
+    @api.one
+    def _get_seo_url_level(self):
+        # starts with -1 to avoid Top Menu
+        url_level = -1
+        if self.parent_id:
+            url_level = self.parent_id.seo_url_level + 1
+        self.seo_url_level = url_level
+
+    @api.one
+    def get_website_view(self):
+        view = False
+        if self.url:
+            xml_id = self.url.split('/')[-1]
+            if '.' not in xml_id:
+                xml_id = 'website.%s' % xml_id
+            try:
+                view = self.env.ref(xml_id)
+            except:
+                pass
+        return view
+    
+    @api.multi
+    def write(self, vals):
+        res = super(WebsiteMenu, self).write(vals)
+        if vals.get('parent_id', False):
+            self.update_related_views()
+        return res
+
+    @api.multi
+    def update_related_views(self):
+        for obj in self:
+            view = obj.get_website_view()[0]
+            if view:
+                view_parent_id = False
+                if obj.parent_id:
+                    view_parent = obj.parent_id.get_website_view()[0]
+                    view_parent_id = view_parent and view_parent.id
+                view.write({
+                    'seo_url_parent': view_parent_id,
+                    'seo_url_level': obj.seo_url_level
+                })
 
 
 class WebsiteSeoMetadata(models.Model):
