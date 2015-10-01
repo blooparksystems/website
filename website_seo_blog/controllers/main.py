@@ -74,7 +74,7 @@ class Website(BaseWebsite):
         env = request.env(context=request.context)
         seo_url_parts = [s.encode('utf8') for s in seo_url.split('/')
                          if s != '']
-        seo_url_blog = (seo_url_parts.pop(0)).replace('blog-', '')
+        seo_url_blog = seo_url_parts.pop(0)
 
         blogs = env['blog.blog'].search([('seo_url', '=', seo_url_blog)])
         if blogs:
