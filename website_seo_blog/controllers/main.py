@@ -86,7 +86,8 @@ class Website(BaseWebsite):
                 ])
                 if blog_posts:
                     return blog_instance.blog_post(blogs[0], blog_posts[0], **post)
-            return blog_instance.blog(blogs[0], **post)
+            else:
+                return blog_instance.blog(blogs[0], **post)
 
         return request.render(page, {})
 
