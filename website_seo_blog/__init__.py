@@ -18,5 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import controllers
-from . import models
+import controllers
+import models
+import tests

@@ -18,4 +18,5 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import test_website_seo_blog
+import test_website_seo_blog
+import test_website_seo_blog_controller

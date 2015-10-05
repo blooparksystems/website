@@ -18,9 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import SUPERUSER_ID
 from openerp.addons.web import http
 from openerp.addons.web.http import request
+from openerp.addons.website.controllers.main import Website as BaseWebsite
 from openerp.addons.website_blog.controllers.main import QueryURL, WebsiteBlog
 from openerp.addons.website_seo.models.website import slug
 from openerp.osv.orm import browse_record
@@ -52,11 +52,7 @@ class QueryURL(QueryURL):
                 else:
                     fragments.append(werkzeug.url_encode([(key, value)]))
         for key, value in paths:
-            if key == 'blog':
-                # SEO url for blog
-                path += '/blog-%s' % value
-            elif key == 'post':
-                # SEO url for blog post
+            if key in ['blog', 'post']:
                 path += '/%s' % value
             else:
                 path += '/' + key + '/%s' % value
@@ -65,59 +61,38 @@ class QueryURL(QueryURL):
         return path
 
 
-class WebsiteBlog(WebsiteBlog):
+class Website(BaseWebsite):
 
-    """Add new blog and blog post routes to handle blog SEO urls."""
+    @http.route(['/<path:seo_url>'], type='http', auth="public", website=True)
+    def path_page(self, seo_url, **post):
 
-    @http.route([
-        '/blog-<string:seo_url>',
-        '/blog-<string:seo_url>/page/<int:page>',
-        '/blog-<string:seo_url>/tag/<model("blog.tag"):tag>',
-        '/blog-<string:seo_url>/tag/<model("blog.tag"):tag>/page/<int:page>',
-    ], type='http', auth="public", website=True)
-    def seo_blog(self, seo_url, tag=None, page=1, **opt):
-        """Route for blogs with SEO urls."""
-        # - request.env.context contains always "'lang': u'en_US'" regardless
-        # of the used frontend language which results in not found non english
-        # blogs, so we update request.env.context with request.context
+        page = 'website.page_404'
+        response = super(Website, self).path_page(seo_url, **post)
+        if response.template != page:
+            return request.website.render(response.template)
+
         env = request.env(context=request.context)
-        if seo_url:
-            blogs = env['blog.blog'].search([('seo_url', '=', seo_url)])
-            if blogs:
-                return self.blog(blogs[0], tag=tag, page=page, **opt)
+        seo_url_parts = [s.encode('utf8') for s in seo_url.split('/')
+                         if s != '']
+        seo_url_blog = seo_url_parts.pop(0)
 
-        return request.redirect('/')
-
-    @http.route(['/blog-<string:seo_url_blog>/<string:seo_url_post>'],
-                type='http', auth="public", website=True)
-    def seo_blog_post(self, seo_url_blog, seo_url_post, tag_id=None, page=1,
-                      enable_editor=None, **post):
-        """Route for blog posts with SEO urls."""
-        # - request.env.user is not set but we need a user for the access of
-        # the field website_message_ids in the controller function blog_post()
-        # in addons/website_blog/controllers/main.py, if request.env.user is
-        # not set you will get an InternalError because of a non set partner_id
-        # later
-        # - furthermore request.env.context contains always "'lang': u'en_US'"
-        # regardless of the used frontend language which results in not found
-        # non english blog posts, so we update request.env.context with
-        # request.context
-        env = request.env(user=SUPERUSER_ID, context=request.context)
-        if seo_url_blog and seo_url_post:
-            blogs = env['blog.blog'].search([('seo_url', '=', seo_url_blog)])
-            if blogs:
+        blogs = env['blog.blog'].search([('seo_url', '=', seo_url_blog)])
+        if blogs:
+            blog_instance = WebsiteBlog()
+            if seo_url_parts:
                 blog_posts = env['blog.post'].search([
                     ('blog_id', '=', blogs[0].id),
-                    ('seo_url', '=', seo_url_post)
+                    ('seo_url', '=', seo_url_parts[0])
                 ])
                 if blog_posts:
-                    return self.blog_post(
-                        blogs[0], blog_posts[0], tag_id=tag_id, page=1,
-                        enable_editor=enable_editor, **post)
-                else:
-                    return request.redirect("/blog-%s" % (slug(blogs[0])))
+                    return blog_instance.blog_post(blogs[0], blog_posts[0], **post)
+            else:
+                return blog_instance.blog(blogs[0], **post)
 
-        return request.redirect('/')
+        return request.render(page, {})
+
+
+class WebsiteBlog(WebsiteBlog):
 
     @http.route()
     def blogs(self, page=1, **post):

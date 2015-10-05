@@ -7,9 +7,12 @@
       <field name="inherit_id" ref="base.view_view_form"/>
       <field name="arch" type="xml">
         <field name="priority" position="after">
-          <field name="seo_url" attrs="{'invisible': ['|', ('type', '!=', 'qweb'), ('inherit_id', '!=', False)]}"/>
-          <field name="seo_url_parent" attrs="{'invisible': ['|', ('type', '!=', 'qweb'), ('inherit_id', '!=', False)]}"/>
-          <field name="seo_url_level" attrs="{'invisible': ['|', ('type', '!=', 'qweb'), ('inherit_id', '!=', False)]}"/>
+          <group string="SEO" attrs="{'invisible': ['|', ('type', '!=', 'qweb'), ('inherit_id', '!=', False)]}">
+            <field name="seo_url"/>
+            <field name="seo_url_parent"/>
+            <field name="seo_url_level"/>
+          </group>
+
         </field>
       </field>
     </record>
@@ -18,12 +21,29 @@
       <field name="name">website.seo.pages.tree</field>
       <field name="model">ir.ui.view</field>
       <field name="arch" type="xml">
-        <tree string="Website SEO Pages" editable="bottom" create="false" delete="false">
+        <tree string="Website SEO Pages" create="false" delete="false">
           <field name="name"/>
+          <field name="seo_url"/>
           <field name="seo_url_parent"/>
           <field name="seo_url_level"/>
-          <field name="seo_url"/>
         </tree>
+      </field>
+    </record>
+
+    <record id="website_seo_pages_form" model="ir.ui.view">
+      <field name="name">website.seo.pages.form</field>
+      <field name="model">ir.ui.view</field>
+      <field name="arch" type="xml">
+        <form string="Website SEO Page">
+          <sheet string="Website SEO Page">
+            <group col="4">
+              <field name="name"/>
+              <field name="seo_url"/>
+              <field name="seo_url_parent"/>
+              <field name="seo_url_level"/>
+            </group>
+          </sheet>
+        </form>
       </field>
     </record>
 
@@ -32,9 +52,24 @@
       <field name="res_model">ir.ui.view</field>
       <field name="view_type">form</field>
       <field name="view_mode">form,tree</field>
-      <field name="view_id" ref="website_seo_pages_tree"/>
+      <field name="view_id" eval="False"/>
       <field name="domain">[('type', '=', 'qweb'), ('inherit_id', '=', False)]</field>
     </record>
+
+    <record id="action_website_seo_pages_tree" model="ir.actions.act_window.view">
+      <field eval="1" name="sequence"/>
+      <field name="view_mode">tree</field>
+      <field name="view_id" ref="website_seo_pages_tree"/>
+      <field name="act_window_id" ref="action_website_seo_pages"/>
+    </record>
+
+    <record id="action_website_seo_pages_form" model="ir.actions.act_window.view">
+      <field eval="2" name="sequence"/>
+      <field name="view_mode">form</field>
+      <field name="view_id" ref="website_seo_pages_form"/>
+      <field name="act_window_id" ref="action_website_seo_pages"/>
+    </record>
+
 
   </data>
 </openerp>

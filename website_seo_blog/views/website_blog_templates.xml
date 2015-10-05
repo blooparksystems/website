@@ -6,7 +6,7 @@
       used here and we can't use the seo_url field in a dynamically way -->
     <template id="blog_post_short" inherit_id="website_blog.blog_post_short" name="Blog Posts">
       <xpath expr="//div[@id='main_column']/div/a" position="replace">
-        <a t-attf-href="/blog-#{ slug(blog_post.blog_id) }/#{ slug(blog_post) }">
+        <a t-attf-href="/#{ slug(blog_post.blog_id) }/#{ slug(blog_post) }">
           <h2 t-field="blog_post.name" class="mb4" />
         </a>
       </xpath>
@@ -14,7 +14,7 @@
 
     <template id="blog_post_complete" inherit_id="website_blog.blog_post_complete">
       <xpath expr="//div[@class='blog_title']/a" position="replace">
-        <a class="hidden js_next" t-attf-href="/blog-#{ slug(next_post.blog_id) }/#{ slug(next_post) }/#wrap" />
+        <a class="hidden js_next" t-attf-href="/#{ slug(next_post.blog_id) }/#{ slug(next_post) }/#wrap" />
       </xpath>
     </template>
 

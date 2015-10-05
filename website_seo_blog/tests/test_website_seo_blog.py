@@ -21,13 +21,16 @@
 from openerp.exceptions import ValidationError
 from openerp.tests import common
 
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class TestWebsiteBlogSeo(common.TransactionCase):
 
     """Unit tests about website blog management with SEO urls."""
 
     at_install = False
-    post_install = False
+    post_install = True
 
     def setUp(self):
         """setUp with one blog and one blog post."""

@@ -18,7 +18,15 @@
         changeRobots: function(robots) {
             $('meta[name=robots]').attr('content', robots);
             this.trigger('robots-changed', robots);
-        }
+        },
+        seo_url: function () {
+            var $seo_url = $('meta[name=seo_url]');
+            return ($seo_url.length > 0) && ($seo_url.attr('content') && $seo_url.attr('content').trim());
+        },
+        changeSeoUrl: function (seo_url) {
+            $('meta[name=seo_url]').attr('content', seo_url);
+            this.trigger('seo_url-changed', seo_url);
+        },
     });
 
     website.seo.Configurator.include({
@@ -27,11 +35,13 @@
             'keyup input[name=seo_page_title]': 'titleChanged',
             'keyup textarea[name=seo_page_description]': 'descriptionChanged',
             'change select[name=seo_page_robots]': 'robotsChanged',
+            'keyup input[name=seo_url]': 'seoUrlChanged',
             'click button[data-action=add]': 'addKeyword',
             'click button[data-action=update]': 'update',
             'hidden.bs.modal': 'destroy'
         },
         canEditRobots: false,
+        canEditSeoUrl: false,
         start: function() {
             var self = this;
             var $modal = self.$el;
@@ -40,6 +50,7 @@
             $modal.find('input[name=seo_page_title]').val(htmlPage.title());
             $modal.find('textarea[name=seo_page_description]').val(htmlPage.description());
             $modal.find('select[name=seo_page_robots]').val(htmlPage.robots());
+            $modal.find('input[name=seo_url]').val(htmlPage.seo_url());
             self.keywordList = new website.seo.KeywordList(self, { page: htmlPage });
             self.keywordList.on('list-full', self, function() {
                 $modal.find('input[name=seo_page_keywords]')
@@ -71,6 +82,7 @@
                 self.canEditKeywords = data && ('website_meta_keywords' in data);
                 // Allow editing the meta robots only for pages that have
                 self.canEditRobots = data && ('website_meta_robots' in data);
+                self.canEditSeoUrl = data && ('seo_url' in data);
                 if (!self.canEditTitle) {
                     $modal.find('input[name=seo_page_title]').attr('disabled', true);
                 }
@@ -82,6 +94,9 @@
                 }
                 if (!self.canEditRobots) {
                     $modal.find('select[name=seo_page_robots]').attr('disabled', true);
+                }
+                if (!self.canEditSeoUrl) {
+                    $modal.find('input[name=seo_url]').attr('disabled', true);
                 }
             });
         },
@@ -100,6 +115,10 @@
             if (self.canEditRobots) {
                 data.website_meta_robots = self.htmlPage.robots();
             }
+            if (self.canEditSeoUrl) {
+                data.seo_url = self.htmlPage.seo_url();
+            }
+
             self.saveMetaData(data).then(function() {
                 self.$el.modal('hide');
             });
@@ -111,7 +130,7 @@
             if (!obj) {
                 def.resolve(null);
             } else {
-                var fields = ['website_meta_title', 'website_meta_description', 'website_meta_keywords', 'website_meta_robots'];
+                var fields = ['website_meta_title', 'website_meta_description', 'website_meta_keywords', 'website_meta_robots', 'seo_url'];
                 var model = website.session.model(obj.model);
                 model.call('read', [[obj.id], fields, website.get_context()]).then(function(data) {
                     if (data.length) {
@@ -134,6 +153,14 @@
                 self.htmlPage.changeRobots(robots);
                 self.renderPreview();
             }, 0);
-        }
+        },
+        seoUrlChanged: function () {
+            var self = this;
+            setTimeout(function () {
+                var seo_url = self.$('input[name=seo_url]').val();
+                self.htmlPage.changeSeoUrl(seo_url);
+                self.renderPreview();
+            }, 0);
+        },
     });
 })();
