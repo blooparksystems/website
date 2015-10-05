@@ -66,6 +66,8 @@ class View(models.Model):
         res = super(View, self).write(vals)
         if 'seo_url_parent' in vals or 'seo_url_level' in vals:
             self.update_related_views()
+        if 'seo_url':
+            self.update_menu_url()
         return res
 
     @api.multi
@@ -73,6 +75,10 @@ class View(models.Model):
         for obj in self:
             if obj.seo_url_children:
                 obj.seo_url_children.write({'seo_url_level': obj.seo_url_level + 1})
+
+    @api.multi
+    def update_menu_url(self):
+        self.env['website.menu'].search([]).update_url()
 
     @api.cr_uid_ids_context
     def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb',

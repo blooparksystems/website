@@ -76,8 +76,9 @@ class WebsiteMenu(models.Model):
     @api.one
     def get_website_view(self):
         view = False
-        if self.url:
-            xml_id = self.url.split('/')[-1]
+        url = self.default_url or self.url
+        if url:
+            xml_id = url.split('/')[-1]
             if '.' not in xml_id:
                 xml_id = 'website.%s' % xml_id
             try:
