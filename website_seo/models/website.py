@@ -52,16 +52,26 @@ class WebsiteMenu(models.Model):
     _inherit = 'website.menu'
 
     url = fields.Char(translate=True)
+    default_url = fields.Char(translate=True)
     seo_url_level = fields.Integer(compute='_get_seo_url_level',
                                    string='SEO URL level')
 
     @api.one
     def _get_seo_url_level(self):
-        # starts with -1 to avoid Top Menu
-        url_level = -1
-        if self.parent_id:
+        url_level = 0
+        if self.parent_id and self.parent_id != self.env.ref('website.main_menu'):
             url_level = self.parent_id.seo_url_level + 1
         self.seo_url_level = url_level
+
+    @api.one
+    def get_seo_url_parts(self):
+        seo_url_parts = []
+        view = self.get_website_view()[0]
+        if view and view.seo_url:
+            seo_url_parts.append(view.seo_url)
+            if self.parent_id:
+                seo_url_parts += self.parent_id.get_seo_url_parts()[0]
+        return seo_url_parts
 
     @api.one
     def get_website_view(self):
@@ -81,13 +91,16 @@ class WebsiteMenu(models.Model):
     def create(self, vals):
         obj = super(WebsiteMenu, self).create(vals)
         obj.update_related_views()
+        obj.update_url()
         return obj
 
     @api.multi
     def write(self, vals):
         res = super(WebsiteMenu, self).write(vals)
-        if vals.get('parent_id', False) or vals.get('url', False):
+        if not self.env.context.get('view_updated', False) \
+           and (vals.get('parent_id', False) or vals.get('url', False)):
             self.update_related_views()
+            self.update_url()
         return res
 
     @api.multi
@@ -103,6 +116,22 @@ class WebsiteMenu(models.Model):
                     'seo_url_parent': view_parent_id,
                     'seo_url_level': obj.seo_url_level
                 })
+
+    @api.multi
+    def update_url(self):
+        for obj in self:
+            vals = {}
+            seo_url_parts = obj.get_seo_url_parts()[0]
+            if seo_url_parts and len(seo_url_parts) == obj.seo_url_level + 1:
+                seo_url_parts.reverse()
+                seo_url = ''.join(['/%s' % p for p in seo_url_parts])
+                vals.update({'url': seo_url})
+                if not obj.default_url:
+                    vals.update({'default_url': obj.url})
+            elif obj.default_url:
+                vals.update({'url': obj.default_url})
+            if vals:
+                obj.with_context(view_updated=True).write(vals)
 
 
 class WebsiteSeoMetadata(models.Model):
