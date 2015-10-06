@@ -107,7 +107,6 @@ class WebsiteMenu(models.Model):
     _inherit = 'website.menu'
 
     url = fields.Char(translate=True)
-    default_url = fields.Char(translate=True)
     seo_url_level = fields.Integer(compute='_get_seo_url_level',
                                    string='SEO URL level')
 
@@ -131,9 +130,8 @@ class WebsiteMenu(models.Model):
     @api.one
     def get_website_view(self):
         view = False
-        url = self.default_url or self.url
-        if url:
-            xml_id = url.split('/')[-1]
+        if self.url:
+            xml_id = self.url.split('/')[-1]
             if '.' not in xml_id:
                 xml_id = 'website.%s' % xml_id
             try:
@@ -182,10 +180,10 @@ class WebsiteMenu(models.Model):
                 seo_url_parts.reverse()
                 seo_url = ''.join(['/%s' % p for p in seo_url_parts])
                 vals.update({'url': seo_url})
-                if not obj.default_url:
-                    vals.update({'default_url': obj.url})
-            elif obj.default_url:
-                vals.update({'url': obj.default_url})
+            else:
+                view = obj.get_website_view()[0]
+                if view:
+                    vals.update({'url': '/page/%s' % view.name})
             if vals:
                 obj.with_context(view_updated=True).write(vals)
 
