@@ -18,7 +18,34 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import ir_http
-from . import ir_ui_view
-from . import ir_translation
-from . import website
+from openerp import api, models
+
+UPDATE_TRANSLATION_DATA = {
+    'ir.ui.view,seo_url': {'model': 'ir.ui.view', 'method': 'update_menu_url'}
+}
+
+
+class IrTranslation(models.Model):
+    _inherit = 'ir.translation'
+
+    @api.model
+    def create(self, vals):
+        obj = super(IrTranslation, self).create(vals)
+        obj.update_translation_data()
+        return obj
+
+    @api.multi
+    def write(self, vals):
+        res = super(IrTranslation, self).write(vals)
+        self.update_translation_data()
+        return res
+
+    @api.multi
+    def update_translation_data(self):
+        for obj in self:
+            data = UPDATE_TRANSLATION_DATA.get(obj.name, False)
+            if data:
+                model = self.env[data['model']].browse([obj.res_id])
+                model_context = getattr(model, 'with_context')(lang=obj.lang)
+                getattr(model_context, data['method'])()
+
