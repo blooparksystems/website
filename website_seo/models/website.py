@@ -107,38 +107,26 @@ class WebsiteMenu(models.Model):
     _inherit = 'website.menu'
 
     url = fields.Char(translate=True)
-    seo_url_level = fields.Integer(compute='_get_seo_url_level',
-                                   string='SEO URL level')
 
     @api.one
-    def _get_seo_url_level(self):
+    def get_seo_url_level(self):
         url_level = 0
         if self.parent_id and self.parent_id != self.env.ref('website.main_menu'):
-            url_level = self.parent_id.seo_url_level + 1
-        self.seo_url_level = url_level
-
-    @api.one
-    def get_seo_url_parts(self):
-        seo_url_parts = []
-        view = self.get_website_view()[0]
-        if view and view.seo_url:
-            seo_url_parts.append(view.seo_url)
-            if self.parent_id:
-                seo_url_parts += self.parent_id.get_seo_url_parts()[0]
-        return seo_url_parts
+            url_level = self.parent_id.get_seo_url_level()[0] + 1
+        return url_level
 
     @api.one
     def get_website_view(self):
         view = False
         if self.url:
-            xml_id = self.url.split('/')[-1]
-            if '.' not in xml_id:
-                xml_id = 'website.%s' % xml_id
             try:
+                url_parts = self.url.split('/')
+                xml_id = url_parts[-1]
+                if '.' not in xml_id:
+                    xml_id = 'website.%s' % xml_id
                 view = self.env.ref(xml_id)
             except:
-                # don't care about other modules menu entries
-                pass
+                view = self.env['ir.ui.view'].find_by_seo_path(self.url)
         return view
 
     @api.model
@@ -166,24 +154,26 @@ class WebsiteMenu(models.Model):
                 if obj.parent_id:
                     view_parent = obj.parent_id.get_website_view()[0]
                     view_parent_id = view_parent and view_parent.id
+                seo_url_level = obj.get_seo_url_level()[0]
                 view.write({
                     'seo_url_parent': view_parent_id,
-                    'seo_url_level': obj.seo_url_level
+                    'seo_url_level': seo_url_level
                 })
 
     @api.multi
     def update_url(self):
         for obj in self:
             vals = {}
-            seo_url_parts = obj.get_seo_url_parts()[0]
-            if seo_url_parts and len(seo_url_parts) == obj.seo_url_level + 1:
-                seo_url_parts.reverse()
-                seo_url = ''.join(['/%s' % p for p in seo_url_parts])
-                vals.update({'url': seo_url})
-            else:
-                view = obj.get_website_view()[0]
-                if view:
-                    vals.update({'url': '/page/%s' % view.name})
+            view = obj.get_website_view()[0]
+            if view:
+                seo_path = view.get_seo_path()[0]
+                if seo_path:
+                    vals.update({'url': seo_path})
+                else:
+                    view_name = view.get_xml_id()
+                    if view_name:
+                        view_name = view_name[view.id].replace('website.', '')
+                        vals.update({'url': '/page/%s' % view_name})
             if vals:
                 obj.with_context(view_updated=True).write(vals)
 

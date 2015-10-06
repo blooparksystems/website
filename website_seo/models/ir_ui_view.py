@@ -80,6 +80,34 @@ class View(models.Model):
     def update_menu_url(self):
         self.env['website.menu'].search([]).update_url()
 
+    @api.one
+    def get_seo_url_parts(self):
+        seo_url_parts = []
+        if self.seo_url:
+            seo_url_parts.append(self.seo_url)
+            if self.seo_url_parent:
+                seo_url_parts += self.seo_url_parent.get_seo_url_parts()[0]
+        return seo_url_parts
+
+    @api.one
+    def get_seo_path(self):
+        seo_url_parts = self.get_seo_url_parts()[0]
+        if len(seo_url_parts) == self.seo_url_level + 1:
+            seo_url_parts.reverse()
+            return '/' + '/'.join(seo_url_parts)
+        return False
+
+    @api.model
+    def find_by_seo_path(self, path):
+        url_parts = path.split('/')
+        views = self.search([('seo_url', 'in', url_parts)],
+                            order='seo_url_level ASC')
+        if len(url_parts) == len(views):
+            view = views[-1]
+            if len(views) == view.seo_url_level + 1:
+                return view
+        return False
+
     @api.cr_uid_ids_context
     def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb',
                context=None):
