@@ -119,21 +119,23 @@ class WebsiteMenu(models.Model):
     def get_website_view(self):
         view = False
         if self.url:
-            try:
+            view = self.env['ir.ui.view'].find_by_seo_path(self.url)
+            if not view:
                 url_parts = self.url.split('/')
                 xml_id = url_parts[-1]
                 if '.' not in xml_id:
                     xml_id = 'website.%s' % xml_id
-                view = self.env.ref(xml_id)
-            except:
-                view = self.env['ir.ui.view'].find_by_seo_path(self.url)
+                view = self.env['ir.model.data'].xmlid_to_object(xml_id)
+            if not view:
+                xml_id = 'website.%s' % slugify(self.name)
+                view = self.env['ir.model.data'].xmlid_to_object(xml_id)
         return view
 
     @api.model
     def create(self, vals):
         obj = super(WebsiteMenu, self).create(vals)
         obj.update_related_views()
-        obj.update_url()
+        obj.update_website_menus()
         return obj
 
     @api.multi
@@ -142,7 +144,7 @@ class WebsiteMenu(models.Model):
         if not self.env.context.get('view_updated', False) \
            and (vals.get('parent_id', False) or vals.get('url', False)):
             self.update_related_views()
-            self.update_url()
+            self.update_website_menus()
         return res
 
     @api.multi
@@ -161,7 +163,7 @@ class WebsiteMenu(models.Model):
                 })
 
     @api.multi
-    def update_url(self):
+    def update_website_menus(self):
         for obj in self:
             vals = {}
             view = obj.get_website_view()[0]
@@ -174,6 +176,13 @@ class WebsiteMenu(models.Model):
                     if view_name:
                         view_name = view_name[view.id].replace('website.', '')
                         vals.update({'url': '/page/%s' % view_name})
+
+                if obj.parent_id.get_website_view()[0] != view.seo_url_parent:
+                    # TODO: create a new method to get a menu from a view
+                    for menu in self:
+                        if menu.get_website_view()[0] == view.seo_url_parent:
+                            vals.update({'parent_id': menu.id})
+                            break
             if vals:
                 obj.with_context(view_updated=True).write(vals)
 

@@ -64,10 +64,10 @@ class View(models.Model):
     @api.multi
     def write(self, vals):
         res = super(View, self).write(vals)
-        if 'seo_url_parent' in vals or 'seo_url_level' in vals:
+        fields = ['seo_url', 'seo_url_parent', 'seo_url_level']
+        if set(fields).intersection(set(vals.keys())):
             self.update_related_views()
-        if 'seo_url':
-            self.update_menu_url()
+            self.update_website_menus()
         return res
 
     @api.multi
@@ -77,8 +77,8 @@ class View(models.Model):
                 obj.seo_url_children.write({'seo_url_level': obj.seo_url_level + 1})
 
     @api.multi
-    def update_menu_url(self):
-        self.env['website.menu'].search([]).update_url()
+    def update_website_menus(self):
+        self.env['website.menu'].search([]).update_website_menus()
 
     @api.one
     def get_seo_url_parts(self):
