@@ -19,8 +19,50 @@
 #
 ##############################################################################
 from openerp import api, fields, models
+from openerp.addons.web.http import request
+from openerp.addons.website_seo.models import website
 from openerp.addons.website_seo.models.website import slug
 from openerp.tools.translate import _
+
+
+website_url_for_lang = website.url_for_lang
+
+
+def url_for_lang(location, lang):
+    translated_location = website_url_for_lang(location, lang)
+    if translated_location == location:
+        blog_obj = request.registry['blog.blog']
+        ctx = request.context.copy()
+        url_parts = location.split('/')
+        blog_url = url_parts.pop(0)
+        while blog_url in ['', 'blog']:
+            blog_url = url_parts.pop(0)
+        blogs = blog_obj.search(request.cr, request.uid,
+                                [('seo_url', '=', blog_url)],
+                                context=ctx)
+        if blogs and url_parts:
+            post_obj = request.registry['blog.post']
+            posts = post_obj.search(request.cr, request.uid,
+                                    [('blog_id', '=', blogs[0]),
+                                     ('seo_url', '=', url_parts[0])],
+                                    context=ctx)
+            if posts:
+                ctx.update({'lang': lang})
+                post = post_obj.browse(request.cr, request.uid,
+                                       posts[0], context=ctx)
+                location = '/%s/%s' % (post.blog_id.seo_url, post.seo_url)
+        elif blogs:
+            ctx.update({'lang': lang})
+            blog = blog_obj.browse(request.cr, request.uid,
+                                   blogs[0], context=ctx)
+            location = '/%s' % blog.seo_url
+    else:
+        location = translated_location
+    return location
+
+
+# change method url_for_lang to use the one redefined here
+setattr(website, 'url_for_lang', url_for_lang)
 
 
 class Blog(models.Model):
