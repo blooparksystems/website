@@ -21,7 +21,7 @@
 from openerp import api, models
 
 UPDATE_TRANSLATION_DATA = {
-    'ir.ui.view,seo_url': {'model': 'ir.ui.view', 'method': 'update_menu_url'}
+    'ir.ui.view,seo_url': {'model': 'ir.ui.view', 'method': 'update_website_menus'}
 }
 
 
