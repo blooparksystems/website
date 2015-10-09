@@ -81,11 +81,11 @@ class Website(BaseWebsite):
             blog_instance = WebsiteBlog()
             if seo_url_parts:
                 blog_posts = env['blog.post'].search([
-                    ('blog_id', '=', blogs[0].id),
+                    ('blog_id', 'in', [x.id for x in blogs]),
                     ('seo_url', '=', seo_url_parts[0])
                 ])
                 if blog_posts:
-                    return blog_instance.blog_post(blogs[0], blog_posts[0], **post)
+                    return blog_instance.blog_post(blog_posts[0].blog_id, blog_posts[0], **post)
             else:
                 return blog_instance.blog(blogs[0], **post)
 

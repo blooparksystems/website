@@ -67,22 +67,25 @@ setattr(website, 'url_for_lang', url_for_lang)
 
 class Blog(models.Model):
 
-    """Add SEO url handling for blogs."""
+    """Add SEO metadata for blogs.
 
-    _inherit = 'blog.blog'
+    If you create or update a blog and this field is empty it is
+    filled automatically when you enter a blog name.\nIf you fill out
+    this field manually the allowed characters are a-z, A-Z, 0-9, - and
+    _.\nAfter changing the SEO url you also have to update the blog menu
+    entry in Settings -> Configuration -> Website Settings -> Configure
+    website menus (also take care of the blog SEO url and blog menu entry
+    translations).\nImportant: If you use the SEO url as link, e. g. in
+    the blog menu entry, you have to add "blog-" at the beginning. It
+    is needed to identify the blog correctly. Example: If your SEO url is
+    "our-news" the link is "blog-our-news".
+
+    """
+
+    _name = 'blog.blog'
+    _inherit = ['blog.blog', 'website.seo.metadata']
 
     name = fields.Char(translate=True)
-    seo_url = fields.Char(
-        help='If you create or update a blog and this field is empty it is '
-        'filled automatically when you enter a blog name.\nIf you fill out '
-        'this field manually the allowed characters are a-z, A-Z, 0-9, - and '
-        '_.\nAfter changing the SEO url you also have to update the blog menu '
-        'entry in Settings -> Configuration -> Website Settings -> Configure '
-        'website menus (also take care of the blog SEO url and blog menu entry'
-        ' translations).\nImportant: If you use the SEO url as link, e. g. in '
-        'the blog menu entry, you have to add "blog-" at the beginning. It '
-        'is needed to identify the blog correctly. Example: If your SEO url is'
-        ' "our-news" the link is "blog-our-news".')
 
     _sql_constraints = [
         ('seo_url_uniq', 'unique(seo_url)', _('SEO url must be unique!'))
@@ -113,15 +116,17 @@ class Blog(models.Model):
 
 class BlogPost(models.Model):
 
-    """Add SEO url handling for blog posts."""
+    """Add SEO url handling for blog posts.
 
-    _inherit = 'blog.post'
+    If you create or update a blog post and this field is empty it
+    is filled automatically when you enter a blog post name.\nIf you fill
+    out this field manually the allowed characters are a-z, A-Z, 0-9, -
+    and _.
 
-    seo_url = fields.Char(
-        help='If you create or update a blog post and this field is empty it '
-        'is filled automatically when you enter a blog post name.\nIf you fill'
-        ' out this field manually the allowed characters are a-z, A-Z, 0-9, - '
-        'and _.')
+    """
+
+    _name = 'blog.post'
+    _inherit = ['blog.post', 'website.seo.metadata']
 
     _sql_constraints = [
         ('seo_url_uniq', 'unique(seo_url)', _('SEO url must be unique!'))
