@@ -208,7 +208,7 @@ class WebsiteSeoMetadata(models.Model):
         ('NOINDEX,FOLLOW', 'NOINDEX,FOLLOW'),
         ('INDEX,NOFOLLOW', 'INDEX,NOFOLLOW'),
         ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
-    ], string='Website meta robots')
+    ], string='Website meta robots', translate=True)
 
     @api.model
     def create(self, vals):
