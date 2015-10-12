@@ -21,6 +21,7 @@
 import re
 import urlparse
 
+import openerp
 from openerp import api, fields, models
 from openerp.addons.web.http import request
 from openerp.addons.website.models import website
@@ -48,9 +49,7 @@ def url_for(path_or_uri, lang=None):
 
         if (len(langs) > 1 or force_lang) and is_multilang_url(location, langs):
             if lang != request.context.get('lang'):
-                translated_location = url_for_lang(location, lang)
-                if translated_location != location:
-                    location = translated_location
+                location = url_for_lang(location, lang)
             ps = location.split('/')
             if ps[1] in langs:
                 # Replace the language only if we explicitly provide a language to url_for
@@ -68,7 +67,6 @@ def url_for(path_or_uri, lang=None):
 
 
 def url_for_lang(location, lang):
-    # TODO: maybe search location in seo_url views instead of url menus
     menu = request.registry['website.menu']
     ctx = request.context.copy()
     menu_ids = menu.search(request.cr, request.uid, [('url', '=', location)], context=ctx)
@@ -98,6 +96,15 @@ def slug(value):
     if not slugname:
         return str(id)
     return "%s-%d" % (slugname, id)
+
+
+class Website(models.Model):
+    _inherit = 'website'
+
+    @openerp.tools.ormcache(skiparg=3)
+    def _get_languages(self, cr, uid, id):
+        website = self.browse(cr, uid, id)
+        return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
 
 
 class WebsiteMenu(models.Model):
@@ -198,7 +205,7 @@ class WebsiteSeoMetadata(models.Model):
         ('NOINDEX,FOLLOW', 'NOINDEX,FOLLOW'),
         ('INDEX,NOFOLLOW', 'INDEX,NOFOLLOW'),
         ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
-    ], string='Website meta robots')
+    ], string='Website meta robots', translate=True)
 
     @api.model
     def create(self, vals):

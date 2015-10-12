@@ -18,6 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from openerp import tools
 from openerp import api, models
 
 UPDATE_TRANSLATION_DATA = {
@@ -27,6 +28,34 @@ UPDATE_TRANSLATION_DATA = {
 
 class IrTranslation(models.Model):
     _inherit = 'ir.translation'
+
+    @tools.ormcache_multi(skiparg=3, multi=6)
+    def _get_ids(self, cr, uid, name, tt, lang, ids):
+        lang = self.pool.get('res.lang').get_code_from_alias(cr, uid, lang)
+        return super(IrTranslation, self)._get_ids(cr, uid, name, tt, lang, ids)
+
+    @api.model
+    def _set_ids(self, name, tt, lang, ids, value, src=None):
+        lang = self.env['res.lang'].get_code_from_alias(lang)
+        return super(IrTranslation, self)._set_ids(name, tt, lang, ids, value, src)
+
+    @api.model
+    def _get_source(self, name, types, lang, source=None, res_id=None):
+        lang = self.env['res.lang'].get_code_from_alias(lang)
+        return super(IrTranslation, self)._get_source(name, types, lang, source, res_id)
+
+    def translate_fields(self, cr, uid, model, id, field=None, context=None):
+        res = super(IrTranslation, self).translate_fields(cr, uid, model, id, field, context)
+        # the translate_fields method does not set module field, it is needed because if you are going to
+        # translate in frontend the system wont't find the existing translation
+        domain = [('module', '=', False), ('type', '=', 'model')]
+        translation_ids = self.search(cr, uid, domain, context=context)
+        if translation_ids:
+            for translation in self.browse(cr, uid, translation_ids):
+                model = translation.name.split(',')[0]
+                module = self.pool.get(model)._original_module
+                self.write(cr, uid, translation.id, {'module': module}, context)
+        return res
 
     @api.model
     def create(self, vals):
@@ -48,4 +77,3 @@ class IrTranslation(models.Model):
                 model = self.env[data['model']].browse([obj.res_id])
                 model_context = getattr(model, 'with_context')(lang=obj.lang)
                 getattr(model_context, data['method'])()
-
