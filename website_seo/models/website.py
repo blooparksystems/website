@@ -104,7 +104,7 @@ class Website(models.Model):
     @openerp.tools.ormcache(skiparg=3)
     def _get_languages(self, cr, uid, id):
         website = self.browse(cr, uid, id)
-        return [(lg.iso_code or lg.code, lg.name) for lg in website.language_ids]
+        return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
 
 
 class WebsiteMenu(models.Model):

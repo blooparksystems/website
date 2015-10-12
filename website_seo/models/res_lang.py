@@ -23,11 +23,14 @@ from openerp.osv import expression
 
 
 class ResLang(models.Model):
+    _name = 'res.lang'
     _inherit = 'res.lang'
+
+    short_code = fields.Char('Short code')
 
     @api.model
     def get_code_from_alias(self, code):
-        lang = self.search([('iso_code', '=', code)])
+        lang = self.search([('short_code', '=', code)])
         return lang and lang[0].code or code
 
 
@@ -45,7 +48,7 @@ def update_lang_code_from_alias_in_expression():
         # look for real lang from context before parse
         parse_ctx = context.copy()
         if parse_ctx.get('lang', False):
-            cr.execute("select code from res_lang where iso_code = '%s'" % parse_ctx['lang'])
+            cr.execute("select code from res_lang where short_code = '%s'" % parse_ctx['lang'])
             res = cr.fetchall()
             if res and res[0]:
                 parse_ctx.update({'lang': res[0][0]})

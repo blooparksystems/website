@@ -30,6 +30,7 @@
     'data': [
         'views/header.xml',
         'views/ir_ui_view.xml',
+        'views/res_lang.xml',
         'views/res_config.xml',
         'views/website_templates.xml'
     ],
