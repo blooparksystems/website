@@ -48,10 +48,14 @@ def update_lang_code_from_alias_in_expression():
         # look for real lang from context before parse
         parse_ctx = context.copy()
         if parse_ctx.get('lang', False):
-            cr.execute("select code from res_lang where short_code = '%s'" % parse_ctx['lang'])
+            cr.execute("select column_name from information_schema.columns "
+                       "where table_name='res_lang' AND column_name='short_code'")
             res = cr.fetchall()
-            if res and res[0]:
-                parse_ctx.update({'lang': res[0][0]})
+            if res:
+                cr.execute("select code from res_lang where short_code = '%s'" % parse_ctx['lang'])
+                res = cr.fetchall()
+                if res and res[0]:
+                    parse_ctx.update({'lang': res[0][0]})
 
         # parse the domain expression
         self.parse(cr, uid, context=parse_ctx)

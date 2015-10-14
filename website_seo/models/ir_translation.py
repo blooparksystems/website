@@ -29,7 +29,7 @@ UPDATE_TRANSLATION_DATA = {
 class IrTranslation(models.Model):
     _inherit = 'ir.translation'
 
-    @tools.ormcache_multi(skiparg=3, multi=6)
+    @api.model
     def _get_ids(self, cr, uid, name, tt, lang, ids):
         lang = self.pool.get('res.lang').get_code_from_alias(cr, uid, lang)
         return super(IrTranslation, self)._get_ids(cr, uid, name, tt, lang, ids)
@@ -43,6 +43,15 @@ class IrTranslation(models.Model):
     def _get_source(self, name, types, lang, source=None, res_id=None):
         lang = self.env['res.lang'].get_code_from_alias(lang)
         return super(IrTranslation, self)._get_source(name, types, lang, source, res_id)
+
+    @api.model
+    def _get_terms_query(self, field, records):
+        lang = self.env['res.lang'].get_code_from_alias(records.env.lang)
+        query = """ SELECT * FROM ir_translation
+                    WHERE lang=%s AND type=%s AND name=%s AND res_id IN %s """
+        name = "%s,%s" % (field.model_name, field.name)
+        params = (lang, 'model', name, tuple(records.ids))
+        return query, params
 
     def translate_fields(self, cr, uid, model, id, field=None, context=None):
         res = super(IrTranslation, self).translate_fields(cr, uid, model, id, field, context)

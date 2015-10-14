@@ -101,7 +101,7 @@ def slug(value):
 class Website(models.Model):
     _inherit = 'website'
 
-    @openerp.tools.ormcache(skiparg=3)
+    @openerp.tools.ormcache('id')
     def _get_languages(self, cr, uid, id):
         website = self.browse(cr, uid, id)
         return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
