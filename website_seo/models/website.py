@@ -72,7 +72,10 @@ def url_for_lang(location, lang):
     menu_ids = menu.search(request.cr, request.uid, [('url', '=', location)], context=ctx)
     if menu_ids:
         ctx.update({'lang': lang})
-        location = menu.browse(request.cr, request.uid, menu_ids[0], context=ctx).url
+        data = menu.search_read(request.cr, request.uid,
+                                    [('id', '=', menu_ids[0])],
+                                    ['url'], context=ctx)
+        location = data and data[0]['url'] or location
     return location
 
 
@@ -181,7 +184,7 @@ class WebsiteMenu(models.Model):
                 else:
                     vals.update({'url': '/page/%s' % view.key.replace('website.', '')})
 
-                if obj.parent_id.get_website_view()[0] != view.seo_url_parent:
+                if view.seo_url_parent and obj.parent_id.get_website_view()[0] != view.seo_url_parent:
                     # TODO: create a new method to get a menu from a view
                     for menu in self:
                         if menu.get_website_view()[0] == view.seo_url_parent:
