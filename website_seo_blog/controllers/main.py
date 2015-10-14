@@ -67,9 +67,9 @@ class Website(BaseWebsite):
     @http.route(['/<path:seo_url>'], type='http', auth="public", website=True)
     def path_page(self, seo_url, **post):
 
-        page = 'website.page_404'
+        pages = ['website.404', 'website.page_404']
         response = super(Website, self).path_page(seo_url, **post)
-        if response.template != page:
+        if response.template not in pages:
             return request.website.render(response.template)
 
         env = request.env(context=request.context)
@@ -90,6 +90,9 @@ class Website(BaseWebsite):
             else:
                 return blog_instance.blog(blogs[0], **post)
 
+        page = pages[0]
+        if env.user.login != 'public':
+            page = pages[1]
         return request.render(page, {})
 
 
