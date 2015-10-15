@@ -64,8 +64,10 @@ class View(models.Model):
     @api.multi
     def write(self, vals):
         res = super(View, self).write(vals)
-        if 'seo_url_parent' in vals or 'seo_url_level' in vals:
+        fields = ['seo_url', 'seo_url_parent', 'seo_url_level']
+        if set(fields).intersection(set(vals.keys())):
             self.update_related_views()
+            self.update_website_menus()
         return res
 
     @api.multi
@@ -73,6 +75,38 @@ class View(models.Model):
         for obj in self:
             if obj.seo_url_children:
                 obj.seo_url_children.write({'seo_url_level': obj.seo_url_level + 1})
+
+    @api.multi
+    def update_website_menus(self):
+        self.env['website.menu'].search([]).update_website_menus()
+
+    @api.one
+    def get_seo_url_parts(self):
+        seo_url_parts = []
+        if self.seo_url:
+            seo_url_parts.append(self.seo_url)
+            if self.seo_url_parent:
+                seo_url_parts += self.seo_url_parent.get_seo_url_parts()[0]
+        return seo_url_parts
+
+    @api.one
+    def get_seo_path(self):
+        seo_url_parts = self.get_seo_url_parts()[0]
+        if len(seo_url_parts) == self.seo_url_level + 1:
+            seo_url_parts.reverse()
+            return '/' + '/'.join(seo_url_parts)
+        return False
+
+    @api.model
+    def find_by_seo_path(self, path):
+        url_parts = path.split('/')
+        views = self.search([('seo_url', 'in', url_parts)],
+                            order='seo_url_level ASC')
+        if len(url_parts) == len(views):
+            view = views[-1]
+            if len(views) == view.seo_url_level + 1:
+                return view
+        return False
 
     @api.cr_uid_ids_context
     def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb',

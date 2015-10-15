@@ -19,28 +19,73 @@
 #
 ##############################################################################
 from openerp import api, fields, models
+from openerp.addons.web.http import request
+from openerp.addons.website_seo.models import website
 from openerp.addons.website_seo.models.website import slug
 from openerp.tools.translate import _
 
 
+website_url_for_lang = website.url_for_lang
+
+
+def url_for_lang(location, lang):
+    translated_location = website_url_for_lang(location, lang)
+    if translated_location == location:
+        blog_obj = request.registry['blog.blog']
+        ctx = request.context.copy()
+        url_parts = location.split('/')
+        blog_url = url_parts.pop(0)
+        while blog_url in ['', 'blog']:
+            blog_url = url_parts.pop(0)
+        blogs = blog_obj.search(request.cr, request.uid,
+                                [('seo_url', '=', blog_url)],
+                                context=ctx)
+        if blogs and url_parts:
+            post_obj = request.registry['blog.post']
+            posts = post_obj.search(request.cr, request.uid,
+                                    [('blog_id', '=', blogs[0]),
+                                     ('seo_url', '=', url_parts[0])],
+                                    context=ctx)
+            if posts:
+                ctx.update({'lang': lang})
+                post = post_obj.browse(request.cr, request.uid,
+                                       posts[0], context=ctx)
+                location = '/%s/%s' % (post.blog_id.seo_url, post.seo_url)
+        elif blogs:
+            ctx.update({'lang': lang})
+            blog = blog_obj.browse(request.cr, request.uid,
+                                   blogs[0], context=ctx)
+            location = '/%s' % blog.seo_url
+    else:
+        location = translated_location
+    return location
+
+
+# change method url_for_lang to use the one redefined here
+setattr(website, 'url_for_lang', url_for_lang)
+
+
 class Blog(models.Model):
 
-    """Add SEO url handling for blogs."""
+    """Add SEO metadata for blogs.
 
-    _inherit = 'blog.blog'
+    If you create or update a blog and this field is empty it is
+    filled automatically when you enter a blog name.\nIf you fill out
+    this field manually the allowed characters are a-z, A-Z, 0-9, - and
+    _.\nAfter changing the SEO url you also have to update the blog menu
+    entry in Settings -> Configuration -> Website Settings -> Configure
+    website menus (also take care of the blog SEO url and blog menu entry
+    translations).\nImportant: If you use the SEO url as link, e. g. in
+    the blog menu entry, you have to add "blog-" at the beginning. It
+    is needed to identify the blog correctly. Example: If your SEO url is
+    "our-news" the link is "blog-our-news".
+
+    """
+
+    _name = 'blog.blog'
+    _inherit = ['blog.blog', 'website.seo.metadata']
 
     name = fields.Char(translate=True)
-    seo_url = fields.Char(
-        help='If you create or update a blog and this field is empty it is '
-        'filled automatically when you enter a blog name.\nIf you fill out '
-        'this field manually the allowed characters are a-z, A-Z, 0-9, - and '
-        '_.\nAfter changing the SEO url you also have to update the blog menu '
-        'entry in Settings -> Configuration -> Website Settings -> Configure '
-        'website menus (also take care of the blog SEO url and blog menu entry'
-        ' translations).\nImportant: If you use the SEO url as link, e. g. in '
-        'the blog menu entry, you have to add "blog-" at the beginning. It '
-        'is needed to identify the blog correctly. Example: If your SEO url is'
-        ' "our-news" the link is "blog-our-news".')
 
     _sql_constraints = [
         ('seo_url_uniq', 'unique(seo_url)', _('SEO url must be unique!'))
@@ -71,15 +116,17 @@ class Blog(models.Model):
 
 class BlogPost(models.Model):
 
-    """Add SEO url handling for blog posts."""
+    """Add SEO url handling for blog posts.
 
-    _inherit = 'blog.post'
+    If you create or update a blog post and this field is empty it
+    is filled automatically when you enter a blog post name.\nIf you fill
+    out this field manually the allowed characters are a-z, A-Z, 0-9, -
+    and _.
 
-    seo_url = fields.Char(
-        help='If you create or update a blog post and this field is empty it '
-        'is filled automatically when you enter a blog post name.\nIf you fill'
-        ' out this field manually the allowed characters are a-z, A-Z, 0-9, - '
-        'and _.')
+    """
+
+    _name = 'blog.post'
+    _inherit = ['blog.post', 'website.seo.metadata']
 
     _sql_constraints = [
         ('seo_url_uniq', 'unique(seo_url)', _('SEO url must be unique!'))

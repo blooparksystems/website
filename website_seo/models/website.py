@@ -19,12 +19,65 @@
 #
 ##############################################################################
 import re
+import urlparse
 
+import openerp
 from openerp import api, fields, models
-from openerp.addons.website.models.website import slugify
+from openerp.addons.web.http import request
+from openerp.addons.website.models import website
+from openerp.addons.website.models.website import slugify, is_multilang_url
 from openerp.exceptions import ValidationError
 from openerp.osv import orm
 from openerp.tools.translate import _
+
+
+def url_for(path_or_uri, lang=None):
+    if isinstance(path_or_uri, unicode):
+        path_or_uri = path_or_uri.encode('utf-8')
+    current_path = request.httprequest.path
+    if isinstance(current_path, unicode):
+        current_path = current_path.encode('utf-8')
+    location = path_or_uri.strip()
+    force_lang = lang is not None
+    url = urlparse.urlparse(location)
+
+    if request and not url.netloc and not url.scheme and (url.path or force_lang):
+        location = urlparse.urljoin(current_path, location)
+
+        lang = lang or request.context.get('lang')
+        langs = [lg[0] for lg in request.website.get_languages()]
+
+        if (len(langs) > 1 or force_lang) and is_multilang_url(location, langs):
+            if lang != request.context.get('lang'):
+                location = url_for_lang(location, lang)
+            ps = location.split('/')
+            if ps[1] in langs:
+                # Replace the language only if we explicitly provide a language to url_for
+                if force_lang:
+                    ps[1] = lang
+                # Remove the default language unless it's explicitly provided
+                elif ps[1] == request.website.default_lang_code:
+                    ps.pop(1)
+            # Insert the context language or the provided language
+            elif lang != request.website.default_lang_code or force_lang:
+                ps.insert(1, lang)
+            location = '/'.join(ps)
+
+    return location.decode('utf-8')
+
+
+def url_for_lang(location, lang):
+    menu = request.registry['website.menu']
+    ctx = request.context.copy()
+    menu_ids = menu.search(request.cr, request.uid, [('url', '=', location)], context=ctx)
+    if menu_ids:
+        ctx.update({'lang': lang})
+        location = menu.browse(request.cr, request.uid, menu_ids[0], context=ctx).url
+    return location
+
+
+# change method url_for to use the one redefined here
+setattr(website, 'url_for', url_for)
 
 
 def slug(value):
@@ -45,6 +98,15 @@ def slug(value):
     return "%s-%d" % (slugname, id)
 
 
+class Website(models.Model):
+    _inherit = 'website'
+
+    @openerp.tools.ormcache(skiparg=3)
+    def _get_languages(self, cr, uid, id):
+        website = self.browse(cr, uid, id)
+        return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
+
+
 class WebsiteMenu(models.Model):
 
     """Add translation possibility to website menu entries."""
@@ -52,42 +114,44 @@ class WebsiteMenu(models.Model):
     _inherit = 'website.menu'
 
     url = fields.Char(translate=True)
-    seo_url_level = fields.Integer(compute='_get_seo_url_level',
-                                   string='SEO URL level')
 
     @api.one
-    def _get_seo_url_level(self):
-        # starts with -1 to avoid Top Menu
-        url_level = -1
-        if self.parent_id:
-            url_level = self.parent_id.seo_url_level + 1
-        self.seo_url_level = url_level
+    def get_seo_url_level(self):
+        url_level = 0
+        if self.parent_id and self.parent_id != self.env.ref('website.main_menu'):
+            url_level = self.parent_id.get_seo_url_level()[0] + 1
+        return url_level
 
     @api.one
     def get_website_view(self):
         view = False
         if self.url:
-            xml_id = self.url.split('/')[-1]
-            if '.' not in xml_id:
-                xml_id = 'website.%s' % xml_id
-            try:
-                view = self.env.ref(xml_id)
-            except:
-                # don't care about other modules menu entries
-                pass
+            view = self.env['ir.ui.view'].find_by_seo_path(self.url)
+            if not view:
+                url_parts = self.url.split('/')
+                xml_id = url_parts[-1]
+                if '.' not in xml_id:
+                    xml_id = 'website.%s' % xml_id
+                view = self.env['ir.model.data'].xmlid_to_object(xml_id)
+            if not view:
+                xml_id = 'website.%s' % slugify(self.name)
+                view = self.env['ir.model.data'].xmlid_to_object(xml_id)
         return view
 
     @api.model
     def create(self, vals):
         obj = super(WebsiteMenu, self).create(vals)
         obj.update_related_views()
+        obj.update_website_menus()
         return obj
 
     @api.multi
     def write(self, vals):
         res = super(WebsiteMenu, self).write(vals)
-        if vals.get('parent_id', False) or vals.get('url', False):
+        if not self.env.context.get('view_updated', False) \
+           and (vals.get('parent_id', False) or vals.get('url', False)):
             self.update_related_views()
+            self.update_website_menus()
         return res
 
     @api.multi
@@ -99,10 +163,35 @@ class WebsiteMenu(models.Model):
                 if obj.parent_id:
                     view_parent = obj.parent_id.get_website_view()[0]
                     view_parent_id = view_parent and view_parent.id
+                seo_url_level = obj.get_seo_url_level()[0]
                 view.write({
                     'seo_url_parent': view_parent_id,
-                    'seo_url_level': obj.seo_url_level
+                    'seo_url_level': seo_url_level
                 })
+
+    @api.multi
+    def update_website_menus(self):
+        for obj in self:
+            vals = {}
+            view = obj.get_website_view()[0]
+            if view:
+                seo_path = view.get_seo_path()[0]
+                if seo_path:
+                    vals.update({'url': seo_path})
+                else:
+                    view_name = view.get_xml_id()
+                    if view_name:
+                        view_name = view_name[view.id].replace('website.', '')
+                        vals.update({'url': '/page/%s' % view_name})
+
+                if obj.parent_id.get_website_view()[0] != view.seo_url_parent:
+                    # TODO: create a new method to get a menu from a view
+                    for menu in self:
+                        if menu.get_website_view()[0] == view.seo_url_parent:
+                            vals.update({'parent_id': menu.id})
+                            break
+            if vals:
+                obj.with_context(view_updated=True).write(vals)
 
 
 class WebsiteSeoMetadata(models.Model):
@@ -119,7 +208,7 @@ class WebsiteSeoMetadata(models.Model):
         ('NOINDEX,FOLLOW', 'NOINDEX,FOLLOW'),
         ('INDEX,NOFOLLOW', 'INDEX,NOFOLLOW'),
         ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
-    ], string='Website meta robots')
+    ], string='Website meta robots', translate=True)
 
     @api.model
     def create(self, vals):
