@@ -18,6 +18,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from . import res_config
-from . import ir_ui_view
-from . import website_blog
+from openerp.models import TransientModel
+from openerp.osv import fields, osv
+from openerp.addons.website_seo.models.website import META_ROBOTS
+
+
+class WebsiteConfigSettings(TransientModel):
+    _inherit = 'website.config.settings'
+
+    _columns = {
+        'website_blog_tag_default_meta_robots': fields.related('website_id',
+                                                               'website_blog_tag_default_meta_robots',
+                                                               type="selection",
+                                                               selection=META_ROBOTS,
+                                                               string='Blog tag default meta robots')
+    }
+
+

@@ -30,5 +30,19 @@
       </field>
     </record>
 
+    <!-- Add seo_url field and on_change attribute for automatically filling the SEO url in blog tag view -->
+    <record model="ir.ui.view" id="view_blog_tag_form">
+      <field name="name">blog.tag.form</field>
+      <field name="model">blog.tag</field>
+      <field name="inherit_id" ref="website_blog.blog_tag_form" />
+      <field name="arch" type="xml">
+        <field name="name" position="replace">
+          <field name="name" on_change="onchange_name(name, seo_url)" />
+          <field name="seo_url" required="1" />
+          <field name="website_meta_robots"  />
+        </field>
+      </field>
+    </record>
+
   </data>
 </openerp>

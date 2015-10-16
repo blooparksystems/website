@@ -80,12 +80,20 @@ class Website(BaseWebsite):
         if blogs:
             blog_instance = WebsiteBlog()
             if seo_url_parts:
-                blog_posts = env['blog.post'].search([
-                    ('blog_id', 'in', [x.id for x in blogs]),
-                    ('seo_url', '=', seo_url_parts[0])
-                ])
-                if blog_posts:
-                    return blog_instance.blog_post(blog_posts[0].blog_id, blog_posts[0], **post)
+                if len(seo_url_parts) == 2:
+                    label, label_url = seo_url_parts
+                    if label == 'tag':
+                        tags = env['blog.tag'].search([('seo_url', '=', label_url)])
+                        if tags:
+                            return blog_instance.blog(blogs[0], tag=tags[0],**post)
+                else:
+                    blog_posts = env['blog.post'].search([
+                        ('blog_id', 'in', [x.id for x in blogs]),
+                        ('seo_url', '=', seo_url_parts[0])
+                    ])
+                    if blog_posts:
+                        return blog_instance.blog_post(blog_posts[0].blog_id,
+                                                       blog_posts[0], **post)
             else:
                 return blog_instance.blog(blogs[0], **post)
 
@@ -140,7 +148,8 @@ class WebsiteBlog(WebsiteBlog):
 
         values.update({
             'blog_url': blog_url,
-            'pager': pager
+            'pager': pager,
+            'main_object': tag or blog
         })
 
         return request.website.render(response.template, values)

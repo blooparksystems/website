@@ -19,65 +19,21 @@
 #
 ##############################################################################
 import re
-import urlparse
 
 import openerp
 from openerp import api, fields, models
-from openerp.addons.web.http import request
-from openerp.addons.website.models import website
-from openerp.addons.website.models.website import slugify, is_multilang_url
+from openerp.addons.website.models.website import slugify
 from openerp.exceptions import ValidationError
 from openerp.osv import orm
 from openerp.tools.translate import _
 
 
-def url_for(path_or_uri, lang=None):
-    if isinstance(path_or_uri, unicode):
-        path_or_uri = path_or_uri.encode('utf-8')
-    current_path = request.httprequest.path
-    if isinstance(current_path, unicode):
-        current_path = current_path.encode('utf-8')
-    location = path_or_uri.strip()
-    force_lang = lang is not None
-    url = urlparse.urlparse(location)
-
-    if request and not url.netloc and not url.scheme and (url.path or force_lang):
-        location = urlparse.urljoin(current_path, location)
-
-        lang = lang or request.context.get('lang')
-        langs = [lg[0] for lg in request.website.get_languages()]
-
-        if (len(langs) > 1 or force_lang) and is_multilang_url(location, langs):
-            if lang != request.context.get('lang'):
-                location = url_for_lang(location, lang)
-            ps = location.split('/')
-            if ps[1] in langs:
-                # Replace the language only if we explicitly provide a language to url_for
-                if force_lang:
-                    ps[1] = lang
-                # Remove the default language unless it's explicitly provided
-                elif ps[1] == request.website.default_lang_code:
-                    ps.pop(1)
-            # Insert the context language or the provided language
-            elif lang != request.website.default_lang_code or force_lang:
-                ps.insert(1, lang)
-            location = '/'.join(ps)
-
-    return location.decode('utf-8')
-
-
-def url_for_lang(location, lang):
-    menu = request.registry['website.menu']
-    ctx = request.context.copy()
-    menu_ids = menu.search(request.cr, request.uid, [('url', '=', location)], context=ctx)
-    if menu_ids:
-        ctx.update({'lang': lang})
-        location = menu.browse(request.cr, request.uid, menu_ids[0], context=ctx).url
-    return location
-
-
-# change method url_for to use the one redefined here
-setattr(website, 'url_for', url_for)
+META_ROBOTS = [
+    ('INDEX,FOLLOW', 'INDEX,FOLLOW'),
+    ('NOINDEX,FOLLOW', 'NOINDEX,FOLLOW'),
+    ('INDEX,NOFOLLOW', 'INDEX,NOFOLLOW'),
+    ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
+]
 
 
 def slug(value):
@@ -203,12 +159,9 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
-    website_meta_robots = fields.Selection([
-        ('INDEX,FOLLOW', 'INDEX,FOLLOW'),
-        ('NOINDEX,FOLLOW', 'NOINDEX,FOLLOW'),
-        ('INDEX,NOFOLLOW', 'INDEX,NOFOLLOW'),
-        ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
-    ], string='Website meta robots', translate=True)
+    website_meta_robots = fields.Selection(META_ROBOTS,
+                                           string='Website meta robots',
+                                           translate=True)
 
     @api.model
     def create(self, vals):
