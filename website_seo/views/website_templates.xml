@@ -8,5 +8,11 @@
       </xpath>
     </template>
 
+    <template id="canonical_tag" inherit_id="website.layout" >
+        <xpath expr="//t[@t-set='languages']" position="before">
+            <link rel="canonical" t-att-href="request.httprequest.url"/>
+        </xpath>
+    </template>
+
   </data>
 </openerp>

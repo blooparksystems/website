@@ -26,6 +26,7 @@ from openerp.addons.website.models.website import slugify
 from openerp.exceptions import ValidationError
 from openerp.osv import orm
 from openerp.tools.translate import _
+from openerp.http import request
 
 
 META_ROBOTS = [
@@ -61,6 +62,10 @@ class Website(models.Model):
     def _get_languages(self, cr, uid, id):
         website = self.browse(cr, uid, id)
         return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
+    
+    def get_alternate_languages(self, cr, uid, ids, req=None, context=None):
+        # TODO: do something here to show url translated in HEAD, current show wrong URL
+        return super(Website, self).get_alternate_languages(cr, uid, ids, req, context)
 
 
 class WebsiteMenu(models.Model):
