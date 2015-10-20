@@ -51,6 +51,7 @@
             $modal.find('textarea[name=seo_page_description]').val(htmlPage.description());
             $modal.find('select[name=seo_page_robots]').val(htmlPage.robots());
             $modal.find('input[name=seo_url]').val(htmlPage.seo_url());
+
             self.keywordList = new website.seo.KeywordList(self, { page: htmlPage });
             self.keywordList.on('list-full', self, function() {
                 $modal.find('input[name=seo_page_keywords]')
@@ -99,6 +100,23 @@
                     $modal.find('input[name=seo_url]').attr('disabled', true);
                 }
             });
+        },
+        suggestField: function (field) {
+            var tip = self.$('.js_seo_' + field + '_tips');
+            if (tip.children().length === 0) {
+                var model = website.session.model('website.seo.metadata');
+                model.call('get_information_from', [field, website.get_context()]).then(function(data) {
+                    if (data.length){
+                        new website.seo.Tip(self, {
+                            message: data,
+                            type: 'info'
+                        }).appendTo(tip);
+                    }
+                });
+            }
+            else {
+                tip.children()[0].remove();
+            }
         },
         update: function () {
             var self = this;
@@ -163,4 +181,14 @@
             }, 0);
         },
     });
+
+    website.ready().done(function() {
+        $(document.body).on('click', '#title_tip', function() {
+            new website.seo.Configurator(this).suggestField('website_meta_title');
+        });
+        $(document.body).on('click', '#description_tip', function() {
+            new website.seo.Configurator(this).suggestField('website_meta_description');
+        });
+    });
+
 })();

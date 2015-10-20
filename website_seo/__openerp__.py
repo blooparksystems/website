@@ -28,6 +28,7 @@
     'website': "http://www.bloopark.de",
     'depends': ['website'],
     'data': [
+        'data/website_seo_data.xml',
         'views/header.xml',
         'views/ir_ui_view.xml',
         'views/res_lang.xml',

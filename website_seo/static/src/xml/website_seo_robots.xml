@@ -2,22 +2,46 @@
 <templates id="template" xml:space="preserve">
 
   <t t-extend="website.seo_configuration">
-    <t t-jquery="section div.form-horizontal.mt16" t-operation="append">
-      <div class="form-group">
-        <label for="seo_page_robots" class="col-lg-2 control-label">Robots Content</label>
-        <div class="col-lg-8">
-          <select name="seo_page_robots" class="form-control">
-            <option value="INDEX,FOLLOW">INDEX,FOLLOW</option>
-            <option value="NOINDEX,FOLLOW">NOINDEX,FOLLOW</option>
-            <option value="INDEX,NOFOLLOW">INDEX,NOFOLLOW</option>
-            <option value="NOINDEX,NOFOLLOW">NOINDEX,NOFOLLOW</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-          <label for="seo_url" class="col-lg-2 control-label">SEO URL</label>
-          <div class="col-lg-8">
-              <input type="text" name="seo_url" class="form-control" maxlength="70" size="70"/>
+    <t t-jquery="section div.form-horizontal.mt16" t-operation="replace">
+        <div class="form-horizontal mt16" role="form">
+          <div class="js_seo_website_meta_title_tips" />
+          <div class="form-group">
+            <label for="seo_page_title" class="col-lg-2 control-label">Title</label>
+            <div class="col-lg-8">
+                <input type="text" name="seo_page_title" class="form-control" maxlength="70" size="70"/>
+            </div>
+            <div id="title_tip">
+                <img class="oe_field_translate oe_input_icon" src="/web/static/src/img/iconset-a-help.png" width="16" height="16" border="0"/>
+            </div>
+          </div>
+
+          <div class="js_seo_website_meta_description_tips" />
+          <div class="form-group">
+            <label for="seo_page_description" class="col-lg-2 control-label">Description</label>
+            <div class="col-lg-8">
+                <textarea name="seo_page_description" class="form-control" rows="3" cols="70" t-att-maxlength="widget.maxDescriptionSize"/>
+            </div>
+            <div id="description_tip">
+                <img class="oe_field_translate oe_input_icon" src="/web/static/src/img/iconset-a-help.png" width="16" height="16" border="0"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="seo_page_robots" class="col-lg-2 control-label">Robots Content</label>
+            <div class="col-lg-8">
+              <select name="seo_page_robots" class="form-control">
+                <option value="INDEX,FOLLOW">INDEX,FOLLOW</option>
+                <option value="NOINDEX,FOLLOW">NOINDEX,FOLLOW</option>
+                <option value="INDEX,NOFOLLOW">INDEX,NOFOLLOW</option>
+                <option value="NOINDEX,NOFOLLOW">NOINDEX,NOFOLLOW</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+              <label for="seo_url" class="col-lg-2 control-label">SEO URL</label>
+              <div class="col-lg-8">
+                  <input type="text" name="seo_url" class="form-control" maxlength="70" size="70"/>
+              </div>
           </div>
       </div>
     </t>
