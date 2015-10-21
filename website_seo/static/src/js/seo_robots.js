@@ -18,6 +18,20 @@ odoo.define('website_seo.seo_robots', function (require) {
     // Javascript \b is not unicode aware, and words beginning or ending by accents won't match \b
     var WORD_SEPARATORS_REGEX = '([\\u2000-\\u206F\\u2E00-\\u2E7F\'!"#\\$%&\\(\\)\\*\\+,\\-\\.\\/:;<=>\\?¿¡@\\[\\]\\^_`\\{\\|\\}~\\s]+|^|$)';
 
+    var Tip = Widget.extend({
+        template: 'website.seo_tip',
+        events: {
+            'closed.bs.alert': 'destroy',
+        },
+        init: function (parent, options) {
+            this.message = options.message;
+            // cf. http://getbootstrap.com/components/#alerts
+            // success, info, warning or danger
+            this.type = options.type || 'info';
+            this._super(parent);
+        },
+    });
+
     var HtmlPage = Class.extend(mixins.PropertiesMixin, {
         url: function () {
             var url = window.location.href;
@@ -233,6 +247,20 @@ odoo.define('website_seo.seo_robots', function (require) {
                 }
             });
         },
+        suggestField: function (field) {
+            var tip = self.$('.js_seo_' + field + '_tips');
+            if (tip.children().length === 0) {
+                var model = new Model('website.seo.metadata');
+                model.call('get_information_from', [field, base.get_context()]).then(function(data) {
+                    if (data.length){
+                        new Tip(self, {message: data, type: 'info'}).appendTo(tip);
+                    }
+                });
+            }
+            else {
+                tip.children()[0].remove();
+            }
+        },
         update: function () {
             var self = this;
             var data = {};
@@ -251,6 +279,7 @@ odoo.define('website_seo.seo_robots', function (require) {
             if (self.canEditSeoUrl) {
                 data.seo_url = self.htmlPage.seo_url();
             }
+
             self.saveMetaData(data).then(function() {
                 self.$el.modal('hide');
             });
@@ -294,6 +323,15 @@ odoo.define('website_seo.seo_robots', function (require) {
                 self.renderPreview();
             }, 0);
         },
+    });
+
+    base.ready().then(function () {
+        $(document.body).on('click', '#title_tip', function() {
+            new seo.Configurator(this).suggestField('website_meta_title');
+        });
+        $(document.body).on('click', '#description_tip', function() {
+            new seo.Configurator(this).suggestField('website_meta_description');
+        });
     });
 
 });

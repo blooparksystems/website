@@ -12,6 +12,18 @@
       </xpath>
     </template>
 
+    <template id="opt_blog_post_short_tags" inherit_id="website_blog.opt_blog_post_short_tags" name="Tags">
+      <xpath expr="//a[@class='mr8']" position="replace">
+        <a class="mr8" t-attf-href="#{blog_url(tag=one_tag, date_begin=False, date_end=False)}" t-esc="one_tag.name"/>
+      </xpath>
+    </template>
+
+    <template id="opt_blog_post_complete_tags" inherit_id="website_blog.opt_blog_post_complete_tags" name="Tags">
+      <xpath expr="//a[@class='mr8']" position="replace">
+        <a class="mr8" t-attf-href="#{blog_url(tag=one_tag)}" t-esc="one_tag.name"/>
+      </xpath>
+    </template>
+
     <template id="blog_post_complete" inherit_id="website_blog.blog_post_complete">
       <xpath expr="//div[@class='blog_title']/a" position="replace">
         <a class="hidden js_next" t-attf-href="/#{ slug(next_post.blog_id) }/#{ slug(next_post) }/#wrap" />

@@ -53,7 +53,7 @@ class QueryURL(QueryURL):
                 else:
                     fragments.append(werkzeug.url_encode([(key, value)]))
         for key, value in paths:
-            if key in ['blog', 'post']:
+            if key in ['blog', 'post', 'tag']:
                 path += '/%s' % value
             else:
                 path += '/' + key + '/%s' % value
@@ -81,12 +81,17 @@ class Website(BaseWebsite):
         if blogs:
             blog_instance = WebsiteBlog()
             if seo_url_parts:
-                blog_posts = env['blog.post'].search([
-                    ('blog_id', 'in', [x.id for x in blogs]),
-                    ('seo_url', '=', seo_url_parts[0])
-                ])
-                if blog_posts:
-                    return blog_instance.blog_post(blog_posts[0].blog_id, blog_posts[0], **post)
+                tags = env['blog.tag'].search([('seo_url', '=', seo_url_parts[0])])
+                if tags:
+                    return blog_instance.blog(blogs[0], tag=tags[0], **post)
+                else:
+                    blog_posts = env['blog.post'].search([
+                        ('blog_id', 'in', [x.id for x in blogs]),
+                        ('seo_url', '=', seo_url_parts[0])
+                    ])
+                    if blog_posts:
+                        return blog_instance.blog_post(blog_posts[0].blog_id,
+                                                       blog_posts[0], **post)
             else:
                 return blog_instance.blog(blogs[0], **post)
 
@@ -115,7 +120,7 @@ class WebsiteBlog(WebsiteBlog):
         env = request.env(context=request.context)
         blog_post_obj = env['blog.post']
         date_end = opt.get('date_end')
-        response = super(WebsiteBlog, self).blog(blog=blog, tag=tag, page=page,
+        response = super(WebsiteBlog, self).blog(blog=blog, tag=None, page=page,
                                                  **opt)
         values = response.qcontext
         blog_url = QueryURL('', ['blog', 'tag'], blog=blog, tag=tag,
@@ -141,7 +146,8 @@ class WebsiteBlog(WebsiteBlog):
 
         values.update({
             'blog_url': blog_url,
-            'pager': pager
+            'pager': pager,
+            'main_object': tag or blog
         })
 
         return request.website.render(response.template, values)
