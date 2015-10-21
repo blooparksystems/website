@@ -195,17 +195,3 @@ class WebsiteSeoMetadata(models.Model):
             raise ValidationError(_('Only a-z, A-Z, 0-9, - and _ are allowed '
                                     'characters for the SEO url.'))
         return True
-
-    @api.model
-    def get_information_from(self, field):
-        domain = [('field', '=', field)]
-        obj = self.env['website.seo.information'].search(domain)
-        return obj and obj[0].information or False
-
-
-class WebsiteSeoInformation(models.Model):
-    _name = 'website.seo.information'
-
-    model = fields.Char('Model')
-    field = fields.Char('Field')
-    information = fields.Text('Information', translate=True)
