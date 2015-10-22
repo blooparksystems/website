@@ -52,7 +52,7 @@ class QueryURL(QueryURL):
                 else:
                     fragments.append(werkzeug.url_encode([(key, value)]))
         for key, value in paths:
-            if key in ['blog', 'post']:
+            if key in ['blog', 'post', 'tag']:
                 path += '/%s' % value
             else:
                 path += '/' + key + '/%s' % value
@@ -80,12 +80,9 @@ class Website(BaseWebsite):
         if blogs:
             blog_instance = WebsiteBlog()
             if seo_url_parts:
-                if len(seo_url_parts) == 2:
-                    label, label_url = seo_url_parts
-                    if label == 'tag':
-                        tags = env['blog.tag'].search([('seo_url', '=', label_url)])
-                        if tags:
-                            return blog_instance.blog(blogs[0], tag=tags[0],**post)
+                tags = env['blog.tag'].search([('seo_url', '=', seo_url_parts[0])])
+                if tags:
+                    return blog_instance.blog(blogs[0], tag=tags[0],**post)
                 else:
                     blog_posts = env['blog.post'].search([
                         ('blog_id', 'in', [x.id for x in blogs]),

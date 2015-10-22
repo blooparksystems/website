@@ -52,7 +52,7 @@ def update_lang_code_from_alias_in_expression():
                        "where table_name='res_lang' AND column_name='short_code'")
             res = cr.fetchall()
             if res:
-                cr.execute("select code from res_lang where short_code = '%s" % parse_ctx['lang'])
+                cr.execute("select code from res_lang where short_code = '%s'" % parse_ctx['lang'])
                 res = cr.fetchall()
                 if res and res[0]:
                     parse_ctx.update({'lang': res[0][0]})

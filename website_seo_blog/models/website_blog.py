@@ -105,3 +105,52 @@ class BlogPost(models.Model):
     def onchange_name(self, name=False, seo_url=False):
         """If SEO url is empty generate the SEO url when changing the name."""
         return self.env['blog.blog'].onchange_name(name, seo_url)
+
+
+class BlogTag(models.Model):
+
+    """Add SEO url handling for blog tag.
+
+    If you create or update a blog tag and this field is empty it
+    is filled automatically when you enter a blog post name.\nIf you fill
+    out this field manually the allowed characters are a-z, A-Z, 0-9, -
+    and _.
+
+    """
+
+    _name = 'blog.tag'
+    _inherit = ['blog.tag', 'website.seo.metadata']
+
+    _sql_constraints = [
+        ('seo_url_uniq', 'unique(seo_url)', _('SEO url must be unique!'))
+    ]
+
+    @api.model
+    def create(self, vals):
+        """Add check for correct SEO urls.
+        """
+        if vals.get('name', False) and not vals.get('seo_url', False):
+            vals['seo_url'] = slug((1, vals['name']))
+
+        if not vals.get('website_meta_robots', False):
+            vals['website_meta_robots'] = self.get_default_meta_robots()
+
+        return super(BlogTag, self).create(vals)
+
+    @api.multi
+    def onchange_name(self, name=False, seo_url=False):
+        """If SEO url is empty generate the SEO url when changing the name."""
+        return self.env['blog.tag'].onchange_name(name, seo_url)
+
+    @api.model
+    def get_default_meta_robots(self):
+        cfg = self.env['website.config.settings'].search([])
+        return cfg and cfg[0].website_blog_tag_default_meta_robots or False
+
+
+class Website(models.Model):
+    _inherit = 'website'
+
+    website_blog_tag_default_meta_robots = fields.Selection(META_ROBOTS,
+                                                            string='Website blog tag default meta robots',
+                                                            translate=True)
