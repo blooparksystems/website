@@ -18,16 +18,4 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import api, fields, models
-
-
-class ResLang(models.Model):
-    _name = 'res.lang'
-    _inherit = 'res.lang'
-
-    short_code = fields.Char('Short code')
-
-    @api.model
-    def get_code_from_alias(self, code):
-        lang = self.search([('short_code', '=', code)])
-        return lang and lang[0].code or code
+import core
