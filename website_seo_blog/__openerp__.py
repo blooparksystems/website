@@ -32,6 +32,7 @@
     ],
     'data': [
         'data/website_blog_data.xml',
+        'views/res_config.xml',
         'views/website_blog_templates.xml',
         'views/website_blog_views.xml'
     ],

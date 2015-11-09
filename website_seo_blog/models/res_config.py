@@ -18,23 +18,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Website SEO',
-    'category': 'Website',
-    'summary': 'Provide the base for an improved SEO handling',
-    'version': '1.0',
-    'author': "bloopark systems GmbH & Co. KG ,"
-              "Odoo Community Association (OCA)",
-    'website': "http://www.bloopark.de",
-    'depends': ['website'],
-    'data': [
-        'data/website_seo_data.xml',
-        'views/header.xml',
-        'views/ir_ui_view.xml',
-        'views/res_lang.xml',
-        'views/res_config.xml',
-        'views/website_templates.xml'
-    ],
-    'installable': True,
-    'auto_install': False,
-}
+from openerp.models import TransientModel
+from openerp.osv import fields, osv
+from openerp.addons.website_seo.models.website import META_ROBOTS
+
+
+class WebsiteConfigSettings(TransientModel):
+    _inherit = 'website.config.settings'
+
+    _columns = {
+        'website_blog_tag_default_meta_robots': fields.related('website_id',
+                                                               'website_blog_tag_default_meta_robots',
+                                                               type="selection",
+                                                               selection=META_ROBOTS,
+                                                               string='Blog tag default meta robots')
+    }
+
+
