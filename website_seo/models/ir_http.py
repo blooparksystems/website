@@ -31,11 +31,13 @@ class IrHttp(models.TransientModel):
         """Update handler finding to avoid endless recursion."""
         handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
 
-        # ToDo: I reuse some parts of the _dispatch() function in
-        # addons/website/models/ir_http.py, maybe we can re-structure
-        # (complete overwrite) this function to have the needed values at this
-        # place
         path = request.httprequest.path.split('/')
+
+        # avoid handle static resource as seo urls
+        if 'static' in path:
+            raise werkzeug.exceptions.NotFound
+
+        handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
 
         request.website = request.registry['website'].get_current_website(
             request.cr, request.uid, context=request.context)
@@ -49,7 +51,7 @@ class IrHttp(models.TransientModel):
 
         request.lang = nearest_lang or preferred_lang
 
-        # added handling from addons/website/models/ir_http.py in _dispatch()
+        # added handling from addons/website/models/fields.py in _dispatch()
         # function to avoid endless recursion when using different languages
         if (path[1] != request.website.default_lang_code
                 and path[1] == request.lang):
