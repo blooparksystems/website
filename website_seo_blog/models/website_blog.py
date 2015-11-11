@@ -102,6 +102,13 @@ class BlogPost(models.Model):
         return super(BlogPost, self).create(vals)
 
     @api.multi
+    def write(self, vals):
+        if len(self) == 1 and vals.get('name', False):
+            vals['seo_url'] = slug((1, vals['name']))
+
+        return super(BlogPost, self).write(vals)
+
+    @api.multi
     def onchange_name(self, name=False, seo_url=False):
         """If SEO url is empty generate the SEO url when changing the name."""
         return self.env['blog.blog'].onchange_name(name, seo_url)
