@@ -190,13 +190,13 @@ odoo.define('website_seo.seo_robots', function (require) {
             $modal.find('textarea[name=seo_page_description]').val(htmlPage.description());
             $modal.find('select[name=seo_page_robots]').val(htmlPage.robots());
             $modal.find('input[name=seo_url]').val(htmlPage.seo_url());
-            // self.suggestImprovements();
-            // self.imageList = new ImageList(self, { page: htmlPage });
-            // if (htmlPage.images().length === 0) {
-            //     $modal.find('.js_image_section').remove();
-            // } else {
-            //     self.imageList.appendTo($modal.find('.js_seo_image_list'));
-            // }
+
+            var path = window.location.href.replace('#', '').slice(-1);
+            if (path === '/'){
+                $('input[name=seo_url]').css('visibility','hidden');
+                $('label[for=seo_url]').css('visibility','hidden');
+            }
+
             self.keywordList = new KeywordList(self, { page: htmlPage });
             self.keywordList.on('list-full', self, function () {
                 $modal.find('input[name=seo_page_keywords]')
