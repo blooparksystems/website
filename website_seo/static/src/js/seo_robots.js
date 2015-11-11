@@ -139,6 +139,7 @@
 
             self.saveMetaData(data).then(function() {
                 self.$el.modal('hide');
+                location.replace(data.seo_url, 301);
             });
         },
         loadMetaData: function () {
