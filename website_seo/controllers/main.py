@@ -53,3 +53,13 @@ class Website(Website):
                 page = 'website.page_404'
 
         return request.render(page, {})
+
+    @http.route()
+    def page(self, page, **opt):
+        try:
+            view = request.website.get_template(page)
+            if view.seo_url:
+                return request.redirect('/%s' % view.seo_url, code=301)
+        except:
+            pass
+        return super(Website, self).page(page, **opt)
