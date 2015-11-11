@@ -31,10 +31,9 @@ class IrHttp(models.TransientModel):
         """Update handler finding to avoid endless recursion."""
 
         path = request.httprequest.path.split('/')
-
         # avoid handle static resource as seo urls
         if 'static' in path:
-            raise werkzeug.exceptions.NotFound
+            raise werkzeug.exceptions.NotFound()
 
         handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
 
