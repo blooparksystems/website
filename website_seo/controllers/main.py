@@ -49,6 +49,12 @@ class Website(Website):
                     and (current_view.seo_url_level + 1) == len(views)):
                 page = current_view.key
         else:
+            redirect_views = [(x.seo_url, x.seo_url_redirect)
+                              for x in request.env['ir.ui.view'].search([])]
+            for view in redirect_views:
+                if view[1] and seo_url in view[1].split(','):
+                    return request.redirect('/%s' % view[0], code=301)
+
             if request.website.is_publisher():
                 page = 'website.page_404'
 

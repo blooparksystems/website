@@ -161,6 +161,7 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
+    seo_url_redirect = fields.Char(string='SEO Url Redirect')
     website_meta_robots = fields.Selection(META_ROBOTS,
                                            string='Website meta robots',
                                            translate=True)
@@ -183,8 +184,14 @@ class WebsiteSeoMetadata(models.Model):
         """Add check for correct SEO urls."""
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
-
-        return super(WebsiteSeoMetadata, self).write(vals)
+            for obj in self:
+                if obj.seo_url:
+                    if obj.seo_url_redirect:
+                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, obj.seo_url)
+                    else:
+                        vals['seo_url_redirect'] = obj.seo_url
+                super(WebsiteSeoMetadata, obj).write(vals)
+        return True
 
     def validate_seo_url(self, seo_url):
         """Validate a manual entered SEO url."""
