@@ -188,9 +188,9 @@ class WebsiteSeoMetadata(models.Model):
                 if obj.seo_url:
                     seo_url = hasattr(self, 'get_seo_path') and getattr(self, 'get_seo_path')() or obj.seo_url
                     if obj.seo_url_redirect:
-                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, obj.seo_url)
+                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, seo_url)
                     else:
-                        vals['seo_url_redirect'] = obj.seo_url
+                        vals['seo_url_redirect'] = seo_url
                 super(WebsiteSeoMetadata, obj).write(vals)
             return True
         return super(WebsiteSeoMetadata, self).write(vals)
