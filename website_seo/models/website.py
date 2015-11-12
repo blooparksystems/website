@@ -192,7 +192,8 @@ class WebsiteSeoMetadata(models.Model):
                     else:
                         vals['seo_url_redirect'] = obj.seo_url
                 super(WebsiteSeoMetadata, obj).write(vals)
-        return True
+            return True
+        return super(WebsiteSeoMetadata, self).write(vals)
 
     def validate_seo_url(self, seo_url):
         """Validate a manual entered SEO url."""
