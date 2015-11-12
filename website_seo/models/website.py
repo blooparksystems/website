@@ -141,7 +141,6 @@ class WebsiteMenu(models.Model):
                     vals.update({'url': seo_path})
                 else:
                     vals.update({'url': '/page/%s' % view.key.replace('website.', '')})
-
                 if view.seo_url_parent and obj.parent_id.get_website_view()[0] != view.seo_url_parent:
                     # TODO: create a new method to get a menu from a view
                     for menu in self:
@@ -186,7 +185,7 @@ class WebsiteSeoMetadata(models.Model):
             self.validate_seo_url(vals['seo_url'])
             for obj in self:
                 if obj.seo_url:
-                    seo_url = hasattr(self, 'get_seo_path') and getattr(self, 'get_seo_path')() or obj.seo_url
+                    seo_url = obj.get_seo_path()[0]
                     if obj.seo_url_redirect:
                         vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, seo_url)
                     else:
@@ -201,6 +200,14 @@ class WebsiteSeoMetadata(models.Model):
             raise ValidationError(_('Only a-z, A-Z, 0-9, - and _ are allowed '
                                     'characters for the SEO url.'))
         return True
+
+    @api.one
+    def get_seo_path(self):
+        """This method must be override in child classes in order to provide
+         a different behavior of the model"""
+        if self.seo_url:
+            return "/%s" % self.seo_url
+        return False
 
     @api.model
     def get_information_from(self, field):

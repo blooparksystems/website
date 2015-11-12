@@ -286,7 +286,21 @@ odoo.define('website_seo.seo_robots', function (require) {
 
             self.saveMetaData(data).then(function() {
                 self.$el.modal('hide');
-                location.replace(data.seo_url, 301);
+                var obj = self.getMainObject();
+                var def = $.Deferred();
+                if (!obj) {
+                    return $.Deferred().reject();
+                } else {
+                    var model = new Model(obj.model).call('get_seo_path', [obj.id, base.get_context()]).then(function (url) {
+                        if (url) {
+                            location.replace(url, 301)
+                        } else {
+                            def.resolve(null);
+                        }
+                    }).fail(function () {
+                        def.reject();
+                    });
+                }
             });
         },
         loadMetaData: function () {
