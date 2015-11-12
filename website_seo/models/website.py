@@ -64,8 +64,42 @@ class Website(models.Model):
         return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
     
     def get_alternate_languages(self, cr, uid, ids, req=None, context=None):
-        # TODO: do something here to show url translated in HEAD, current show wrong URL
-        return super(Website, self).get_alternate_languages(cr, uid, ids, req, context)
+        langs = []
+        if req is None:
+            req = request.httprequest
+        default = self.get_current_website(cr, uid, context=context).default_lang_code
+        shorts = []
+        for code, name in self.get_languages(cr, uid, ids, context=context):
+            lg_path = ('/' + code) if code != default else ''
+            lg = code.split('_')
+            shorts.append(lg[0])
+            path = self.get_translated_path(cr, uid, req.path, code, context=context)
+            href = req.url_root[0:-1] + lg_path + path
+            if req.query_string:
+                href += '?' + req.query_string
+            lang = {
+                'hreflang': ('-'.join(lg)).lower(),
+                'short': lg[0],
+                'href': href,
+            }
+            langs.append(lang)
+        for lang in langs:
+            if shorts.count(lang['short']) == 1:
+                lang['hreflang'] = lang['short']
+        return langs
+
+    def get_translated_path(self, cr, uid, path, lang, context=None):
+        if lang == request.lang:
+            return path
+        ctx = context.copy()
+        ctx.update({'lang': request.lang})
+        view = self.pool.get('ir.ui.view')
+        view_ids = view.search(cr, uid, [('seo_url', '!=', False)], context=context)
+        for obj in view.browse(cr, uid, view_ids, context=ctx):
+            if obj.get_seo_path()[0] == path:
+                ctx.update({'lang': lang})
+                return view.browse(cr, uid, obj.id, context=ctx).get_seo_path()[0]
+        return path
 
 
 class WebsiteMenu(models.Model):
