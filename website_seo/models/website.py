@@ -160,7 +160,7 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
-    seo_url_redirect = fields.Char(string='SEO Url Redirect')
+    seo_url_redirect = fields.Char(string='SEO Url Redirect', translate=True)
     website_meta_robots = fields.Selection(META_ROBOTS,
                                            string='Website meta robots',
                                            translate=True)
@@ -180,7 +180,9 @@ class WebsiteSeoMetadata(models.Model):
 
     @api.multi
     def write(self, vals):
-        """Add check for correct SEO urls."""
+        """- Add check for correct SEO urls.
+           - Saves old seo_url in seo_url_redirect field
+        """
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
             for obj in self:

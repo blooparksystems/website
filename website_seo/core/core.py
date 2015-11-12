@@ -27,7 +27,6 @@ def modify_selection_to_be_translatable():
 
     for k, v in fields._String.__dict__.items():
         if not k.startswith('__') and type(v) == types.FunctionType:
-            print v
             setattr(fields.Selection, k, v)
 
 modify_selection_to_be_translatable()
