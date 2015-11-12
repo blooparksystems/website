@@ -37,6 +37,12 @@ class IrHttp(models.TransientModel):
 
         handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
 
+        # avoid handle static resource as seo urls
+        if 'static' in path:
+            raise werkzeug.exceptions.NotFound
+
+        handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
+
         request.website = request.registry['website'].get_current_website(
             request.cr, request.uid, context=request.context)
 
