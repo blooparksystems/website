@@ -191,8 +191,12 @@ odoo.define('website_seo.seo_robots', function (require) {
             $modal.find('select[name=seo_page_robots]').val(htmlPage.robots());
             $modal.find('input[name=seo_url]').val(htmlPage.seo_url());
 
-            var path = window.location.href.replace('#', '').slice(-1);
-            if (path === '/'){
+            var url_parts = window.location.href.split('/');
+            var path = url_parts[url_parts.length - 1];
+            if (path) {
+                path = path.replace('#', '').replace('?', '');
+            }
+            if (! path || path === 'homepage'){
                 $('input[name=seo_url]').css('visibility','hidden');
                 $('label[for=seo_url]').css('visibility','hidden');
             }
