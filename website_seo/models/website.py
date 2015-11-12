@@ -63,6 +63,17 @@ class Website(models.Model):
         website = self.browse(cr, uid, id)
         return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
     
+    def get_canonical_url(self, cr, uid, req=None, context=None):
+        if req is None:
+            req = request.httprequest
+        default = self.get_current_website(cr, uid, context=context).default_lang_code
+        if request.lang != default:
+            url = req.url_root[0:-1] + '/' + request.lang + req.path
+            if req.query_string:
+                url += '?' + req.query_string
+            return url
+        return req.url
+
     def get_alternate_languages(self, cr, uid, ids, req=None, context=None):
         langs = []
         if req is None:
