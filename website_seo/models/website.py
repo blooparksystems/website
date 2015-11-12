@@ -186,6 +186,7 @@ class WebsiteSeoMetadata(models.Model):
             self.validate_seo_url(vals['seo_url'])
             for obj in self:
                 if obj.seo_url:
+                    seo_url = hasattr(self, 'get_seo_path') and getattr(self, 'get_seo_path')() or obj.seo_url
                     if obj.seo_url_redirect:
                         vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, obj.seo_url)
                     else:

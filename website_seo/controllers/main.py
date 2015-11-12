@@ -48,17 +48,25 @@ class Website(Website):
             if (seo_url_parts == seo_url_check
                     and (current_view.seo_url_level + 1) == len(views)):
                 page = current_view.key
-        else:
-            redirect_views = [(x.seo_url, x.seo_url_redirect)
-                              for x in request.env['ir.ui.view'].search([])]
-            for view in redirect_views:
-                if view[1] and seo_url in view[1].split(','):
-                    return request.redirect('/%s' % view[0], code=301)
 
-            if request.website.is_publisher():
-                page = 'website.page_404'
+        if page == 'website.404':
+            page = self.look_for_redirect_url(seo_url, **kwargs)
+            if page:
+                return request.redirect(page, code=301)
+
+        if page == 'website.404' and request.website.is_publisher():
+            page = 'website.page_404'
 
         return request.render(page, {})
+
+    def look_for_redirect_url(self, seo_url, **kwargs):
+        for view in request.env['ir.ui.view'].search([('seo_url_redirect', '!=', False)]):
+            current_seo_url = view.seo_url
+            if hasattr(view, 'get_seo_path'):
+                current_seo_url = view.get_seo_path()
+            if seo_url in view.seo_url_redirect.split(','):
+                return current_seo_url
+        return False
 
     @http.route()
     def page(self, page, **opt):
