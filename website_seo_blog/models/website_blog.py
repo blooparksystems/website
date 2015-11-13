@@ -57,6 +57,13 @@ class Blog(models.Model):
 
         return {}
 
+    @api.multi
+    def write(self, vals):
+        lang = self.env.context.get('lang', False)
+        if lang:
+            lang = self.env['res.lang'].get_code_from_alias(lang)
+        return super(Blog, self.with_context(lang=lang)).write(vals)
+
     @api.model
     def add_seo_url(self):
         """Add SEO urls for existing blogs and blog posts.
@@ -103,10 +110,13 @@ class BlogPost(models.Model):
 
     @api.multi
     def write(self, vals):
+        lang = self.env.context.get('lang', False)
+        if lang:
+            lang = self.env['res.lang'].get_code_from_alias(lang)
         if len(self) == 1 and vals.get('name', False):
             vals['seo_url'] = slug((1, vals['name']))
 
-        return super(BlogPost, self).write(vals)
+        return super(BlogPost, self.with_context(lang=lang)).write(vals)
 
     @api.multi
     def onchange_name(self, name=False, seo_url=False):
@@ -147,6 +157,13 @@ class BlogTag(models.Model):
             vals['website_meta_robots'] = self.get_default_meta_robots()
 
         return super(BlogTag, self).create(vals)
+
+    @api.multi
+    def write(self, vals):
+        lang = self.env.context.get('lang', False)
+        if lang:
+            lang = self.env['res.lang'].get_code_from_alias(lang)
+        return super(BlogTag, self.with_context(lang=lang)).write(vals)
 
     @api.multi
     def onchange_name(self, name=False, seo_url=False):
