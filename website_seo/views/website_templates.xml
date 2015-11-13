@@ -14,5 +14,11 @@
         </xpath>
     </template>
 
+    <template id="hide_promote_panel_button" inherit_id="website.user_navbar" >
+        <xpath expr="//a[@id='promote-menu-button']" position="attributes">
+            <attribute name="t-if">editable</attribute>
+        </xpath>
+    </template>
+
   </data>
 </openerp>
