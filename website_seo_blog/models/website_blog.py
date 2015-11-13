@@ -113,6 +113,10 @@ class BlogPost(models.Model):
         """If SEO url is empty generate the SEO url when changing the name."""
         return self.env['blog.blog'].onchange_name(name, seo_url)
 
+    @api.one
+    def get_seo_path(self):
+        return '/%s/%s' % (self.blog_id.seo_url, self.seo_url)
+
 
 class BlogTag(models.Model):
 
