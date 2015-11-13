@@ -50,9 +50,9 @@ class Website(Website):
                 page = current_view.key
 
         if page == 'website.404':
-            page = self.look_for_redirect_url(seo_url, **kwargs)
-            if page:
-                return request.redirect(page, code=301)
+            url = self.look_for_redirect_url(seo_url, **kwargs)
+            if url:
+                return request.redirect(url, code=301)
 
         if page == 'website.404' and request.website.is_publisher():
             page = 'website.page_404'
@@ -61,11 +61,10 @@ class Website(Website):
 
     def look_for_redirect_url(self, seo_url, **kwargs):
         for view in request.env['ir.ui.view'].search([('seo_url_redirect', '!=', False)]):
-            current_seo_url = view.seo_url
-            if hasattr(view, 'get_seo_path'):
-                current_seo_url = view.get_seo_path()
+            if not seo_url.startswith('/'):
+                seo_url = '/%s' % seo_url
             if seo_url in view.seo_url_redirect.split(','):
-                return current_seo_url
+                return view.get_seo_path()[0]
         return False
 
     @http.route()
