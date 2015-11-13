@@ -76,3 +76,8 @@ class Website(Website):
         except:
             pass
         return super(Website, self).page(page, **opt)
+
+    @http.route()
+    def seo_suggest(self, keywords=None, lang=None):
+        code = request.env['res.lang'].get_code_from_alias(lang)
+        return super(Website, self).seo_suggest(keywords=keywords, lang=code)

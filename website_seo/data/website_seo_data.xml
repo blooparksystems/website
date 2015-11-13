@@ -4,17 +4,12 @@
 
     <record id="field_title_tip" model="website.seo.information" >
         <field name="field">website_meta_title</field>
-        <field name="information">The title tag refers to the subject of the HTML page, it is very important to Google and should describe the content very well.
-The title tag is displayed in the Google search results pages.
-The title tag should a maximum of 55 characters (including spaces) long, if need be it can also be a little longer, it is then cut in the search results.
-The keyword should, if possible, as far as possible be forward.</field>
+        <field name="information">The title tag refers to the topic of the HTML page. It is very important for Google and should describe the content very well. The title tag is displayed in the Google search results pages. The title tag should have a maximum of 55 characters (including spaces). It can also have more characters, it will be cut in the search results. If possible the keyword should be at the beginning.</field>
     </record>
 
     <record id="field_description_tip" model="website.seo.information" >
         <field name="field">website_meta_description</field>
-        <field name="information">The meta description will be displayed on the Google search results pages.
-The meta description is a detailed description of the HTML page, they should encourage users to the search result click (Call-to-Action).
-The length should not exceed 156 characters (including spaces).</field>
+        <field name="information">The meta description will be displayed on the Google search results pages. The meta description is a detailed characterization of the HTML page. It should encourage users to click on the search result (Call-to-Action). The length should be a maximum of 156 characters (including spaces).</field>
     </record>
 
   </data>

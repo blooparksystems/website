@@ -10,6 +10,8 @@ odoo.define('website_seo.seo_robots', function (require) {
     var base = require('web_editor.base');
     var seo = require('website.seo');
 
+    var _t = core._t;
+
     var qweb = core.qweb;
 
     ajax.loadXML('/website_seo/static/src/xml/website_seo_robots.xml', qweb);
@@ -17,6 +19,22 @@ odoo.define('website_seo.seo_robots', function (require) {
     // This replaces \b, because accents(e.g. à, é) are not seen as word boundaries.
     // Javascript \b is not unicode aware, and words beginning or ending by accents won't match \b
     var WORD_SEPARATORS_REGEX = '([\\u2000-\\u206F\\u2E00-\\u2E7F\'!"#\\$%&\\(\\)\\*\\+,\\-\\.\\/:;<=>\\?¿¡@\\[\\]\\^_`\\{\\|\\}~\\s]+|^|$)';
+
+    function analyzeKeyword(htmlPage, keyword) {
+        return  htmlPage.isInTitle(keyword) ? {
+                    title: 'label label-primary',
+                    description: "This keyword is used in the page title",
+                } : htmlPage.isInDescription(keyword) ? {
+                    title: 'label label-info',
+                    description: "This keyword is used in the page description",
+                } : htmlPage.isInBody(keyword) ? {
+                    title: 'label label-info',
+                    description: "This keyword is used in the page content."
+                } : {
+                    title: 'label label-default',
+                    description: "This keyword is not used anywhere on the page."
+                };
+    }
 
     var Tip = Widget.extend({
         template: 'website.seo_tip',
@@ -124,6 +142,129 @@ odoo.define('website_seo.seo_robots', function (require) {
         },
     });
 
+    var Suggestion = Widget.extend({
+        template: 'website.seo_suggestion',
+        events: {
+            'click .js_seo_suggestion': 'select',
+        },
+        init: function (parent, options) {
+            this.root = options.root;
+            this.keyword = options.keyword;
+            this.language = options.language;
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            this.htmlPage.on('title-changed', this, this.renderElement);
+            this.htmlPage.on('description-changed', this, this.renderElement);
+        },
+        analyze: function () {
+            return analyzeKeyword(this.htmlPage, this.keyword);
+        },
+        highlight: function () {
+            return this.analyze().title;
+        },
+        tooltip: function () {
+            return this.analyze().description;
+        },
+        select: function () {
+            this.trigger('selected', this.keyword);
+        },
+    });
+
+    var SuggestionList = Widget.extend({
+        template: 'website.seo_suggestion_list',
+        init: function (parent, options) {
+            this.root = options.root;
+            this.language = options.language;
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            this.refresh();
+        },
+        refresh: function () {
+            var self = this;
+            self.$el.append(_t("Loading..."));
+            var language = self.language || base.get_context().lang.toLowerCase();
+            ajax.jsonRpc('/website/seo_suggest', 'call', {
+                'keywords': self.root,
+                'lang': language,
+            }).then(function(keyword_list){
+                self.addSuggestions(JSON.parse(keyword_list));
+            });
+        },
+        addSuggestions: function(keywords) {
+            var self = this;
+            self.$el.empty();
+            // TODO Improve algorithm + Ajust based on custom user keywords
+            var regex = new RegExp(self.root, "gi");
+            var keywords = _.map(_.uniq(keywords), function (word) {
+                return word.replace(regex, "").trim();
+            });
+            // TODO Order properly ?
+            _.each(keywords, function (keyword) {
+                if (keyword) {
+                    var suggestion = new Suggestion(self, {
+                        root: self.root,
+                        language: self.language,
+                        keyword: keyword,
+                        page: self.htmlPage,
+                    });
+                    suggestion.on('selected', self, function (word, language) {
+                        self.trigger('selected', word, language);
+                    });
+                    suggestion.appendTo(self.$el);
+                }
+            });
+         },
+    });
+
+    var Keyword = Widget.extend({
+        template: 'website.seo_keyword',
+        events: {
+            'click a[data-action=remove-keyword]': 'destroy',
+        },
+        maxWordsPerKeyword: 4, // TODO Check
+        init: function (parent, options) {
+            this.keyword = options.word;
+            this.language = options.language;
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            this.htmlPage.on('title-changed', this, this.updateLabel);
+            this.htmlPage.on('description-changed', this, this.updateLabel);
+            this.suggestionList = new SuggestionList(this, {
+                root: this.keyword,
+                language: this.language,
+                page: this.htmlPage,
+            });
+            this.suggestionList.on('selected', this, function (word, language) {
+                this.trigger('selected', word, language);
+            });
+            this.suggestionList.appendTo(this.$('.js_seo_keyword_suggestion'));
+        },
+        analyze: function () {
+            return analyzeKeyword(this.htmlPage, this.keyword);
+        },
+        highlight: function () {
+            return this.analyze().title;
+        },
+        tooltip: function () {
+            return this.analyze().description;
+        },
+        updateLabel: function () {
+            var cssClass = "oe_seo_keyword js_seo_keyword " + this.highlight();
+            this.$(".js_seo_keyword").attr('class', cssClass);
+            this.$(".js_seo_keyword").attr('title', this.tooltip());
+        },
+        destroy: function () {
+            this.trigger('removed');
+            this._super();
+        },
+    });
+
     var KeywordList = Widget.extend({
         template: 'website.seo_list',
         maxKeywords: 10,
@@ -178,6 +319,42 @@ odoo.define('website_seo.seo_robots', function (require) {
         },
     });
 
+    var Image = Widget.extend({
+        template: 'website.seo_image',
+        init: function (parent, options) {
+            this.src = options.src;
+            this.alt = options.alt;
+            this._super(parent);
+        },
+    });
+
+    var ImageList = Widget.extend({
+        init: function (parent, options) {
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            var self = this;
+            this.htmlPage.images().each(function (index, image) {
+                new Image(self, image).appendTo(self.$el);
+            });
+        },
+        images: function () {
+            var result = [];
+            this.$('input').each(function () {
+               var $input = $(this);
+               result.push({
+                   src: $input.attr('src'),
+                   alt: $input.val(),
+               });
+            });
+            return result;
+        },
+        add: function (image) {
+            new Image(this, image).appendTo(this.$el);
+        },
+    });
+
     seo.Configurator.include({
         events: {
             'keyup input[name=seo_page_keywords]': 'confirmKeyword',
@@ -187,6 +364,7 @@ odoo.define('website_seo.seo_robots', function (require) {
             'keyup input[name=seo_url]': 'seoUrlChanged',
             'click button[data-action=add]': 'addKeyword',
             'click button[data-action=update]': 'update',
+            'change select[name=seo_url_page_language]': 'changeLanguage',
             'hidden.bs.modal': 'destroy'
         },
         canEditRobots: false,
@@ -234,6 +412,27 @@ odoo.define('website_seo.seo_robots', function (require) {
             $modal.modal();
             self.getLanguages();
         },
+        getLanguages: function(){
+            var self = this;
+            ajax.jsonRpc('/web/dataset/call_kw', 'call', {
+                model: 'website',
+                method: 'get_languages',
+                args: [],
+                kwargs: {
+                    ids: [base.get_context().website_id],
+                    context: base.get_context()
+                }
+            }).then( function(data) {
+                self.$('#language-box').html(core.qweb.render('Configurator.language_promote', {
+                    'language': data,
+                    'def_lang': base.get_context().lang
+                }));
+                self.$('#seo-language-box').html(core.qweb.render('Configurator.language_promote', {
+                    'language': data,
+                    'def_lang': base.get_context().lang
+                }));
+            });
+        },
         disableUnsavableFields: function () {
             var self = this;
             var $modal = self.$el;
@@ -275,43 +474,68 @@ odoo.define('website_seo.seo_robots', function (require) {
                 tip.children()[0].remove();
             }
         },
+        addKeyword: function (word) {
+            var $input = this.$('input[name=seo_page_keywords]');
+            var $language = this.$('select[name=seo_page_language]');
+            var keyword = _.isString(word) ? word : $input.val();
+            var language = $language.val().toLowerCase();
+            this.keywordList.add(keyword, language);
+            $input.val("");
+        },
         update: function () {
             var self = this;
             var data = {};
             if (self.canEditTitle) {
-                data.website_meta_title = self.htmlPage.title();
+                data.website_meta_title = this.$('input[name=seo_page_title]').val(); //self.htmlPage.title();
             }
             if (self.canEditDescription) {
-                data.website_meta_description = self.htmlPage.description();
+                data.website_meta_description = this.$('textarea[name=seo_page_description]').val(); //self.htmlPage.description();
             }
             if (self.canEditKeywords) {
                 data.website_meta_keywords = self.keywordList.keywords().join(", ");
             }
             if (self.canEditRobots) {
-                data.website_meta_robots = self.htmlPage.robots();
+                data.website_meta_robots = this.$('select[name=seo_page_robots]').val(); //self.htmlPage.robots();
             }
             if (self.canEditSeoUrl) {
-                data.seo_url = self.htmlPage.seo_url();
+                data.seo_url = this.$('input[name=seo_url]').val(); //self.htmlPage.seo_url();
             }
 
             self.saveMetaData(data).then(function() {
                 self.$el.modal('hide');
-                var obj = self.getMainObject();
-                var def = $.Deferred();
-                if (!obj) {
-                    return $.Deferred().reject();
-                } else {
-                    var model = new Model(obj.model).call('get_seo_path', [obj.id, base.get_context()]).then(function (url) {
-                        if (url) {
-                            location.replace(url, 301)
+                self.$('#seo-language-box').val(base.get_context().lang);
+                self.getSeoPath().then(function(seo_path) {
+                    if (seo_path) {
+                        location.replace(seo_path, 301);
+                    }
+                });
+            });
+        },
+        getSeoPath: function () {
+            var self = this;
+            var obj = this.getMainObject();
+            var def = $.Deferred();
+            if (!obj) {
+                def.resolve(null);
+            } else {
+                var ctx = base.get_context();
+                var lang = self.getCurrentLanguage();
+                if (lang) {
+                    ctx.lang = lang;
+                }
+                new Model(obj.model)
+                    .call('get_seo_path', [obj.id, ctx])
+                    .then(function (result) {
+                        if (result && result[0] !== false) {
+                            def.resolve(result[0]);
                         } else {
                             def.resolve(null);
                         }
                     }).fail(function () {
                         def.reject();
                     });
-                }
-            });
+            }
+            return def;
         },
         loadMetaData: function () {
             var self = this;
@@ -321,8 +545,13 @@ odoo.define('website_seo.seo_robots', function (require) {
                 // return $.Deferred().reject(new Error("No main_object was found."));
                 def.resolve(null);
             } else {
+                var ctx = base.get_context();
+                var lang = self.getCurrentLanguage();
+                if (lang) {
+                    ctx.lang = lang;
+                }
                 var fields = ['website_meta_title', 'website_meta_description', 'website_meta_keywords', 'website_meta_robots', 'seo_url'];
-                var model = new Model(obj.model).call('read', [[obj.id], fields, base.get_context()]).then(function (data) {
+                var model = new Model(obj.model).call('read', [[obj.id], fields, ctx]).then(function (data) {
                     if (data.length) {
                         var meta = data[0];
                         meta.model = obj.model;
@@ -335,6 +564,19 @@ odoo.define('website_seo.seo_robots', function (require) {
                 });
             }
             return def;
+        },
+        saveMetaData: function (data) {
+            var obj = this.getMainObject();
+            if (!obj) {
+                return $.Deferred().reject();
+            } else {
+                var ctx = base.get_context();
+                var lang = this.getCurrentLanguage();
+                if (lang) {
+                    ctx.lang = lang;
+                }
+                return new Model(obj.model).call('write', [[obj.id], data, ctx]);
+            }
         },
         robotsChanged: function () {
             var self = this;
@@ -353,19 +595,44 @@ odoo.define('website_seo.seo_robots', function (require) {
             }, 0);
         },
         renderPreview: function () {
+            var self = this;
             var url = this.htmlPage.url();
-            var url_parts = url.split('/');
-            url_parts[url_parts.length - 1] = this.htmlPage.seo_url();
-            url = url_parts.join('/');
-            var preview = new Preview(this, {
-                title: this.htmlPage.title(),
-                description: this.htmlPage.description(),
-                url: url,
+            var seo_url = this.$('input[name=seo_url]').val();
+            self.getSeoPath().then(function(seo_path) {
+                if (seo_url) {
+                    var url_parts = url.split('/');
+                    if (seo_path) {
+                        url_parts[url_parts.length - 1] = seo_url;
+                        url = url_parts.join('/');
+                    }
+                    else {
+                        url = [url_parts[0], url_parts[1], url_parts[2], seo_url].join('/');
+                    }
+                }
+                var preview = new Preview(self, {
+                    title: self.htmlPage.title(),
+                    description: self.htmlPage.description(),
+                    url: url,
+                });
+                var $preview = self.$('.js_seo_preview');
+                $preview.empty();
+                preview.appendTo($preview);
             });
-            var $preview = this.$('.js_seo_preview');
-            $preview.empty();
-            preview.appendTo($preview);
         },
+        getCurrentLanguage: function () {
+            return this.$('#seo-language-box').val();
+        },
+        changeLanguage: function() {
+            var self = this;
+            this.loadMetaData().then(function(data){
+                var $modal = self.$el;
+                $modal.find('input[name=seo_page_title]').val(data.website_meta_title);
+                $modal.find('textarea[name=seo_page_description]').val(data.website_meta_description || '');
+                $modal.find('select[name=seo_page_robots]').val(data.website_meta_robots);
+                $modal.find('input[name=seo_url]').val(data.seo_url || '');
+                self.renderPreview();
+            });
+        }
     });
 
     base.ready().then(function () {
