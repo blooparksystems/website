@@ -52,7 +52,6 @@ class Website(Website):
         if page == 'website.404':
             url = self.look_for_redirect_url(seo_url, **kwargs)
             if url:
-                print url
                 return request.redirect(url, code=301)
 
         if page == 'website.404' and request.website.is_publisher():
