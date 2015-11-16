@@ -601,13 +601,21 @@ odoo.define('website_seo.seo_robots', function (require) {
             self.getSeoPath().then(function(seo_path) {
                 if (seo_url) {
                     var url_parts = url.split('/');
+                    var lang = self.getCurrentLanguage();
                     if (seo_path) {
+                        if (lang && lang !== base.get_context().lang) {
+                            url_parts.splice(3, 0, lang);
+                        }
                         url_parts[url_parts.length - 1] = seo_url;
-                        url = url_parts.join('/');
                     }
                     else {
-                        url = [url_parts[0], url_parts[1], url_parts[2], seo_url].join('/');
+                        url_parts = url_parts.slice(0, 3).join('/');
+                        if (lang && lang !== base.get_context().lang) {
+                            url_parts.push(lang)
+                        }
+                        url_parts.push(seo_url);
                     }
+                    url = url_parts.join('/');
                 }
                 var preview = new Preview(self, {
                     title: self.htmlPage.title(),
