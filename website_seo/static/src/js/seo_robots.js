@@ -609,9 +609,9 @@ odoo.define('website_seo.seo_robots', function (require) {
                         url_parts[url_parts.length - 1] = seo_url;
                     }
                     else {
-                        url_parts = url_parts.slice(0, 3).join('/');
+                        url_parts = url_parts.slice(0, 3);
                         if (lang && lang !== base.get_context().lang) {
-                            url_parts.push(lang)
+                            url_parts.push(lang);
                         }
                         url_parts.push(seo_url);
                     }

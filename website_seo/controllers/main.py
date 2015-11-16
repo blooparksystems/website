@@ -52,6 +52,7 @@ class Website(Website):
         if page == 'website.404':
             url = self.look_for_redirect_url(seo_url, **kwargs)
             if url:
+                print url
                 return request.redirect(url, code=301)
 
         if page == 'website.404' and request.website.is_publisher():
@@ -60,10 +61,11 @@ class Website(Website):
         return request.render(page, {})
 
     def look_for_redirect_url(self, seo_url, **kwargs):
-        for view in request.env['ir.ui.view'].search([('seo_url_redirect', '!=', False)]):
+        domain = ['|', ('seo_url_redirect', '!=', False), ('seo_url', '=', seo_url)]
+        for view in request.env['ir.ui.view'].search(domain):
             if not seo_url.startswith('/'):
                 seo_url = '/%s' % seo_url
-            if seo_url in view.seo_url_redirect.split(','):
+            if not view.seo_url_redirect or (seo_url in view.seo_url_redirect.split(',')):
                 return view.get_seo_path()[0]
         return False
 
@@ -72,7 +74,7 @@ class Website(Website):
         try:
             view = request.website.get_template(page)
             if view.seo_url:
-                return request.redirect('/%s' % view.seo_url, code=301)
+                return request.redirect(view.get_seo_path()[0], code=301)
         except:
             pass
         return super(Website, self).page(page, **opt)
