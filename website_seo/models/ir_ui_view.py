@@ -142,6 +142,7 @@ class View(models.Model):
 
     @api.one
     def get_seo_path(self):
+        self.env['ir.translation'].clear_caches()
         seo_url_parts = self.get_seo_url_parts()[0]
         if len(seo_url_parts) == self.seo_url_level + 1:
             seo_url_parts.reverse()
