@@ -63,9 +63,54 @@ class Website(models.Model):
         website = self.browse(cr, uid, id)
         return [(lg.short_code or lg.code, lg.name) for lg in website.language_ids]
     
+    def get_canonical_url(self, cr, uid, req=None, context=None):
+        if req is None:
+            req = request.httprequest
+        default = self.get_current_website(cr, uid, context=context).default_lang_code
+        if request.lang != default:
+            url = req.url_root[0:-1] + '/' + request.lang + req.path
+            if req.query_string:
+                url += '?' + req.query_string
+            return url
+        return req.url
+
     def get_alternate_languages(self, cr, uid, ids, req=None, context=None):
-        # TODO: do something here to show url translated in HEAD, current show wrong URL
-        return super(Website, self).get_alternate_languages(cr, uid, ids, req, context)
+        langs = []
+        if req is None:
+            req = request.httprequest
+        default = self.get_current_website(cr, uid, context=context).default_lang_code
+        shorts = []
+        for code, name in self.get_languages(cr, uid, ids, context=context):
+            lg_path = ('/' + code) if code != default else ''
+            lg = code.split('_')
+            shorts.append(lg[0])
+            path = self.get_translated_path(cr, uid, req.path, code, context=context)
+            href = req.url_root[0:-1] + lg_path + path
+            if req.query_string:
+                href += '?' + req.query_string
+            lang = {
+                'hreflang': ('-'.join(lg)).lower(),
+                'short': lg[0],
+                'href': href,
+            }
+            langs.append(lang)
+        for lang in langs:
+            if shorts.count(lang['short']) == 1:
+                lang['hreflang'] = lang['short']
+        return langs
+
+    def get_translated_path(self, cr, uid, path, lang, context=None):
+        if lang == request.lang:
+            return path
+        ctx = context.copy()
+        ctx.update({'lang': request.lang})
+        view = self.pool.get('ir.ui.view')
+        view_ids = view.search(cr, uid, [('seo_url', '!=', False)], context=context)
+        for obj in view.browse(cr, uid, view_ids, context=ctx):
+            if obj.get_seo_path()[0] == path:
+                ctx.update({'lang': lang})
+                return view.browse(cr, uid, obj.id, context=ctx).get_seo_path()[0]
+        return path
 
 
 class WebsiteMenu(models.Model):
@@ -108,11 +153,15 @@ class WebsiteMenu(models.Model):
 
     @api.multi
     def write(self, vals):
-        res = super(WebsiteMenu, self).write(vals)
+        self.clear_caches()
+        lang = self.env.context.get('lang', False)
+        if lang:
+            lang = self.env['res.lang'].get_code_from_alias(lang)
+        res = super(WebsiteMenu, self.with_context(lang=lang)).write(vals)
         if not self.env.context.get('view_updated', False) \
            and (vals.get('parent_id', False) or vals.get('url', False)):
-            self.update_related_views()
-            self.update_website_menus()
+            self.with_context(lang=lang).update_related_views()
+            self.with_context(lang=lang).update_website_menus()
         return res
 
     @api.multi
@@ -164,7 +213,7 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
-    seo_url_redirect = fields.Char(string='SEO Url Redirect')
+    seo_url_redirect = fields.Char(string='SEO Url Redirect', translate=True)
     website_meta_robots = fields.Selection(META_ROBOTS,
                                            string='Website meta robots',
                                            translate=True)
@@ -184,17 +233,21 @@ class WebsiteSeoMetadata(models.Model):
 
     @api.multi
     def write(self, vals):
-        """Add check for correct SEO urls."""
+        """- Add check for correct SEO urls.
+           - Saves old seo_url in seo_url_redirect field
+        """
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
             for obj in self:
                 if obj.seo_url:
+                    seo_url = obj.get_seo_path()[0]
                     if obj.seo_url_redirect:
-                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, obj.seo_url)
+                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, seo_url)
                     else:
-                        vals['seo_url_redirect'] = obj.seo_url
+                        vals['seo_url_redirect'] = seo_url
                 super(WebsiteSeoMetadata, obj).write(vals)
-        return True
+            return True
+        return super(WebsiteSeoMetadata, self).write(vals)
 
     def validate_seo_url(self, seo_url):
         """Validate a manual entered SEO url."""
@@ -202,6 +255,14 @@ class WebsiteSeoMetadata(models.Model):
             raise ValidationError(_('Only a-z, A-Z, 0-9, - and _ are allowed '
                                     'characters for the SEO url.'))
         return True
+
+    @api.one
+    def get_seo_path(self):
+        """This method must be override in child classes in order to provide
+         a different behavior of the model"""
+        if self.seo_url:
+            return "/%s" % self.seo_url
+        return False
 
     @api.model
     def get_information_from(self, field):

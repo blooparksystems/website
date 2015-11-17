@@ -38,6 +38,7 @@
             'keyup input[name=seo_url]': 'seoUrlChanged',
             'click button[data-action=add]': 'addKeyword',
             'click button[data-action=update]': 'update',
+            'change select[name=seo_url_page_language]': 'changeLanguage',
             'hidden.bs.modal': 'destroy'
         },
         canEditRobots: false,
@@ -52,21 +53,25 @@
             $modal.find('select[name=seo_page_robots]').val(htmlPage.robots());
             $modal.find('input[name=seo_url]').val(htmlPage.seo_url());
 
-		    var path = window.location.href.replace('#', '').slice(-1);
-            if (path === '/'){
+            var url_parts = window.location.href.split('/');
+            var path = url_parts[url_parts.length - 1];
+            if (path) {
+                path = path.replace('#', '').replace('?', '');
+            }
+            if (! path || path === 'homepage'){
                 $('input[name=seo_url]').css('visibility','hidden');
                 $('label[for=seo_url]').css('visibility','hidden');
             }
 
             self.keywordList = new website.seo.KeywordList(self, { page: htmlPage });
-            self.keywordList.on('list-full', self, function() {
+            self.keywordList.on('list-full', self, function () {
                 $modal.find('input[name=seo_page_keywords]')
                     .attr('readonly', "readonly")
                     .attr('placeholder', "Remove a keyword first");
                 $modal.find('button[data-action=add]')
                     .prop('disabled', true).addClass('disabled');
             });
-            self.keywordList.on('list-not-full', self, function() {
+            self.keywordList.on('list-not-full', self, function () {
                 $modal.find('input[name=seo_page_keywords]')
                     .removeAttr('readonly').attr('placeholder', "");
                 $modal.find('button[data-action=add]')
@@ -79,6 +84,24 @@
             self.disableUnsavableFields();
             self.renderPreview();
             $modal.modal();
+            self.getLanguages();
+        },
+        getLanguages: function(){
+            var self = this;
+            openerp.jsonRpc('/web/dataset/call_kw', 'call', {
+                model: 'website',
+                method: 'get_languages',
+                args: [],
+                kwargs: {
+                    ids: [website.get_context().website_id],
+                    context: website.get_context()
+                }
+            }).then( function(data) {
+                self.$('#seo-language-box').html(openerp.qweb.render('website_seo.language_promote', {
+                    'language': data,
+                    'def_lang': website.get_context().lang
+                }));
+            });
         },
         disableUnsavableFields: function () {
             var self = this;
@@ -128,25 +151,56 @@
             var self = this;
             var data = {};
             if (self.canEditTitle) {
-                data.website_meta_title = self.htmlPage.title();
+                data.website_meta_title = this.$('input[name=seo_page_title]').val(); //self.htmlPage.title();
             }
             if (self.canEditDescription) {
-                data.website_meta_description = self.htmlPage.description();
+                data.website_meta_description = this.$('textarea[name=seo_page_description]').val(); //self.htmlPage.description();
             }
             if (self.canEditKeywords) {
                 data.website_meta_keywords = self.keywordList.keywords().join(", ");
             }
             if (self.canEditRobots) {
-                data.website_meta_robots = self.htmlPage.robots();
+                data.website_meta_robots = this.$('select[name=seo_page_robots]').val(); //self.htmlPage.robots();
             }
             if (self.canEditSeoUrl) {
-                data.seo_url = self.htmlPage.seo_url();
+                data.seo_url = this.$('input[name=seo_url]').val(); //self.htmlPage.seo_url();
             }
 
             self.saveMetaData(data).then(function() {
                 self.$el.modal('hide');
-                location.replace(data.seo_url, 301);
+                self.$('#seo-language-box').val(website.get_context().lang);
+                self.getSeoPath().then(function(seo_path) {
+                    if (seo_path) {
+                        location.replace(seo_path, 301);
+                    }
+                });
             });
+        },
+        getSeoPath: function () {
+            var self = this;
+            var obj = this.getMainObject();
+            var def = $.Deferred();
+            if (!obj) {
+                def.resolve(null);
+            } else {
+                var ctx = website.get_context();
+                var lang = self.getCurrentLanguage();
+                if (lang) {
+                    ctx.lang = lang;
+                }
+                website.session.model(obj.model)
+                    .call('get_seo_path', [obj.id, ctx])
+                    .then(function (result) {
+                        if (result && result[0] !== false) {
+                            def.resolve(result[0]);
+                        } else {
+                            def.resolve(null);
+                        }
+                    }).fail(function () {
+                        def.reject();
+                    });
+            }
+            return def;
         },
         loadMetaData: function () {
             var self = this;
@@ -155,9 +209,14 @@
             if (!obj) {
                 def.resolve(null);
             } else {
+                var ctx = website.get_context();
+                var lang = self.getCurrentLanguage();
+                if (lang) {
+                    ctx.lang = lang;
+                }
                 var fields = ['website_meta_title', 'website_meta_description', 'website_meta_keywords', 'website_meta_robots', 'seo_url'];
                 var model = website.session.model(obj.model);
-                model.call('read', [[obj.id], fields, website.get_context()]).then(function(data) {
+                model.call('read', [[obj.id], fields, ctx]).then(function(data) {
                     if (data.length) {
                         var meta = data[0];
                         meta.model = obj.model;
@@ -170,6 +229,19 @@
                 });
             }
             return def;
+        },
+        saveMetaData: function (data) {
+            var obj = this.getMainObject();
+            if (!obj) {
+                return $.Deferred().reject();
+            } else {
+                var ctx = website.get_context();
+                var lang = this.getCurrentLanguage();
+                if (lang) {
+                    ctx.lang = lang;
+                }
+                return website.session.model(obj.model).call('write', [[obj.id], data, ctx]);
+            }
         },
         robotsChanged: function () {
             var self = this;
@@ -187,6 +259,53 @@
                 self.renderPreview();
             }, 0);
         },
+        renderPreview: function () {
+            var self = this;
+            var url = this.htmlPage.url();
+            var seo_url = this.$('input[name=seo_url]').val();
+            self.getSeoPath().then(function(seo_path) {
+                if (seo_url) {
+                    var url_parts = url.split('/');
+                    var lang = self.getCurrentLanguage();
+                    if (seo_path) {
+                        if (lang && lang !== website.get_context().lang) {
+                            url_parts.splice(3, 0, lang);
+                        }
+                        url_parts[url_parts.length - 1] = seo_url;
+                    }
+                    else {
+                        url_parts = url_parts.slice(0, 3);
+                        if (lang && lang !== website.get_context().lang) {
+                            url_parts.push(lang);
+                        }
+                        url_parts.push(seo_url);
+                    }
+                    url = url_parts.join('/');
+                }
+                var preview = new website.seo.Preview(self, {
+                    title: self.htmlPage.title(),
+                    description: self.htmlPage.description(),
+                    url: url,
+                });
+                var $preview = self.$('.js_seo_preview');
+                $preview.empty();
+                preview.appendTo($preview);
+            });
+        },
+        getCurrentLanguage: function () {
+            return this.$('#seo-language-box').val();
+        },
+        changeLanguage: function() {
+            var self = this;
+            this.loadMetaData().then(function(data){
+                var $modal = self.$el;
+                $modal.find('input[name=seo_page_title]').val(data.website_meta_title);
+                $modal.find('textarea[name=seo_page_description]').val(data.website_meta_description || '');
+                $modal.find('select[name=seo_page_robots]').val(data.website_meta_robots);
+                $modal.find('input[name=seo_url]').val(data.seo_url || '');
+                self.renderPreview();
+            });
+        }
     });
 
     website.ready().done(function() {

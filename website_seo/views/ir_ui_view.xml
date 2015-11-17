@@ -21,11 +21,11 @@
       <field name="name">website.seo.pages.tree</field>
       <field name="model">ir.ui.view</field>
       <field name="arch" type="xml">
-        <tree string="Website SEO Pages" create="false" delete="false">
+        <tree string="Website SEO Pages" editable="bottom" create="false" delete="false">
           <field name="name"/>
-          <field name="seo_url"/>
           <field name="seo_url_parent"/>
           <field name="seo_url_level"/>
+          <field name="seo_url"/>
         </tree>
       </field>
     </record>
@@ -52,7 +52,7 @@
       <field name="res_model">ir.ui.view</field>
       <field name="view_type">form</field>
       <field name="view_mode">form,tree</field>
-      <field name="view_id" eval="False"/>
+      <field name="view_id" ref="website_seo_pages_tree"/>
       <field name="domain">[('type', '=', 'qweb'), ('inherit_id', '=', False)]</field>
     </record>
 
