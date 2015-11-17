@@ -60,10 +60,11 @@ class Website(Website):
         return request.render(page, {})
 
     def look_for_redirect_url(self, seo_url, **kwargs):
-        for view in request.env['ir.ui.view'].search([('seo_url_redirect', '!=', False)]):
+        domain = ['|', ('seo_url_redirect', '!=', False), ('seo_url', '=', seo_url)]
+        for view in request.env['ir.ui.view'].search(domain):
             if not seo_url.startswith('/'):
                 seo_url = '/%s' % seo_url
-            if seo_url in view.seo_url_redirect.split(','):
+            if not view.seo_url_redirect or (seo_url in view.seo_url_redirect.split(',')):
                 return view.get_seo_path()[0]
         return False
 
@@ -72,7 +73,12 @@ class Website(Website):
         try:
             view = request.website.get_template(page)
             if view.seo_url:
-                return request.redirect('/%s' % view.seo_url, code=301)
+                return request.redirect(view.get_seo_path()[0], code=301)
         except:
             pass
         return super(Website, self).page(page, **opt)
+
+    @http.route()
+    def seo_suggest(self, keywords=None, lang=None):
+        code = request.env['res.lang'].get_code_from_alias(lang)
+        return super(Website, self).seo_suggest(keywords=keywords, lang=code)

@@ -153,11 +153,14 @@ class WebsiteMenu(models.Model):
 
     @api.multi
     def write(self, vals):
-        res = super(WebsiteMenu, self).write(vals)
+        lang = self.env.context.get('lang', False)
+        if lang:
+            lang = self.env['res.lang'].get_code_from_alias(lang)
+        res = super(WebsiteMenu, self.with_context(lang=lang)).write(vals)
         if not self.env.context.get('view_updated', False) \
            and (vals.get('parent_id', False) or vals.get('url', False)):
-            self.update_related_views()
-            self.update_website_menus()
+            self.with_context(lang=lang).update_related_views()
+            self.with_context(lang=lang).update_website_menus()
         return res
 
     @api.multi

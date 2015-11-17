@@ -69,6 +69,8 @@ class Website(BaseWebsite):
 
         pages = ['website.404', 'website.page_404']
         response = super(Website, self).path_page(seo_url, **post)
+        if response._status_code == 301:
+            return response
         if response.template not in pages:
             return request.website.render(response.template)
 
