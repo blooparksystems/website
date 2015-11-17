@@ -13,10 +13,12 @@ With remote developers all across the world, we are pride of our wide perspectiv
 Support
 ------- 
 
-* Jens Holze (CEO) (jholze@bloopark.de)
+* Jens Holze (jholze@bloopark.de)
 * Benjamin Bachmann (bbachmann@bloopark.de)
 * Christoph Giesel (cgiesel@bloopark.de)
 * Robert Rübner (rruebner@bloopark.de)
+* Cesar Lage (kaerdsar@gmail.com)
+* Zakarias Makrelouf (zmakrelouf@bloopark.de)
 
 <a href="http://bloopark.de/">
 <img class="oe_picture" alt="bloopark" src="http://bloopark.de/logo.png">
