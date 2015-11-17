@@ -88,4 +88,4 @@ msgstr "Die Meta Beschreibung wird auf den Google Suchergebnisseiten angezeigt. 
 #, python-format
 msgid ""
 "This form will save only the configuration for the selected language. If you change the language before save the SEO information recently changed will be lost."
-msgstr "Dieses Formular wird nur die Konfiguration für die ausgewählte Sprache zu speichern. Wenn Sie die Sprache ändern, bevor speichern Sie die SEO-Informationen vor kurzem geändert, gehen verloren."
+msgstr "Dieses Formular wird nur die Konfiguration für die ausgewählte Sprache speichern. Wenn Sie die Sprache wechseln, bevor Sie die SEO-Informationen speichern, gehen diese Daten verloren."
