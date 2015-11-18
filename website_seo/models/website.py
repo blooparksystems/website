@@ -238,22 +238,27 @@ class WebsiteSeoMetadata(models.Model):
         """- Add check for correct SEO urls.
            - Saves old seo_url in seo_url_redirect field
         """
-        # TODO: includes the case when the seo_url is added for first time
-        # and the url '/page/...' must be saved to redirect
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
+        if vals.get('seo_url', False) or vals.get('seo_url_parent', False):
             for obj in self:
-                if obj.seo_url:
-                    seo_url = obj.get_seo_path()[0]
-                    if seo_url not in [x.url for x in obj.seo_url_redirect]:
-                        redirect = {
-                            'url': seo_url,
-                            'resource': '%s,%s' % (obj._name, obj.id)
-                        }
-                        self.env['website.seo.redirect'].create(redirect)
+                obj.update_seo_redirect()
                 super(WebsiteSeoMetadata, obj).write(vals)
             return True
         return super(WebsiteSeoMetadata, self).write(vals)
+
+    @api.one
+    def update_seo_redirect(self):
+        # TODO: includes the case when the seo_url is added for first time
+        # and the url '/page/...' must be saved to redirect
+        if self.seo_url:
+            seo_url = self.get_seo_path()[0]
+            if seo_url not in [x.url for x in self.seo_url_redirect]:
+                redirect = {
+                    'url': seo_url,
+                    'resource': '%s,%s' % (self._name, self.id)
+                }
+                self.env['website.seo.redirect'].create(redirect)
 
     def validate_seo_url(self, seo_url):
         """Validate a manual entered SEO url."""
