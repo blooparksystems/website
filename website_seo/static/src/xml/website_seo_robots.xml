@@ -7,7 +7,7 @@
 
           <div class="alert alert-warning">This form will save only the configuration for the selected language. If you change the language before save the SEO information recently changed will be lost.</div>
 
-          <div class="form-group">
+          <div class="hidden form-group">
               <label for="seo_url_page_language" class="col-lg-2 control-label">Language:</label>
               <div class="col-lg-8">
                   <select name="seo_url_page_language" id="seo-language-box" class="form-control"/>

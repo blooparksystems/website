@@ -260,6 +260,7 @@ class WebsiteSeoMetadata(models.Model):
     def get_seo_path(self):
         """This method must be override in child classes in order to provide
          a different behavior of the model"""
+        self.env['ir.translation'].clear_caches()
         if self.seo_url:
             return "/%s" % self.seo_url
         return False
