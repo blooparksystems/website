@@ -208,10 +208,17 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
-    seo_url_redirect = fields.Char(string='SEO Url Redirect', translate=True)
+    seo_url_redirect = fields.One2many(compute='_get_seo_url_redirect',
+                                       comodel_name='website.seo.redirect',
+                                       string='SEO Url Redirect', translate=True)
     website_meta_robots = fields.Selection(META_ROBOTS,
                                            string='Website meta robots',
                                            translate=True)
+
+    @api.one
+    def _get_seo_url_redirect(self):
+        resource = '%s,%s' % (self._name, str(self.id))
+        return self.env['website.seo.redirect'].search([('resource', '=', resource)])
 
     @api.model
     def create(self, vals):
@@ -231,15 +238,19 @@ class WebsiteSeoMetadata(models.Model):
         """- Add check for correct SEO urls.
            - Saves old seo_url in seo_url_redirect field
         """
+        # TODO: includes the case when the seo_url is added for first time
+        # and the url '/page/...' must be saved to redirect
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
             for obj in self:
                 if obj.seo_url:
                     seo_url = obj.get_seo_path()[0]
-                    if obj.seo_url_redirect:
-                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, seo_url)
-                    else:
-                        vals['seo_url_redirect'] = seo_url
+                    if seo_url not in [x.url for x in obj.seo_url_redirect]:
+                        redirect = {
+                            'url': seo_url,
+                            'resource': '%s,%s' % (obj._name, obj.id)
+                        }
+                        self.env['website.seo.redirect'].create(redirect)
                 super(WebsiteSeoMetadata, obj).write(vals)
             return True
         return super(WebsiteSeoMetadata, self).write(vals)
@@ -264,6 +275,21 @@ class WebsiteSeoMetadata(models.Model):
         domain = [('field', '=', field)]
         obj = self.env['website.seo.information'].search(domain)
         return obj and obj[0].information or False
+
+
+class WebsiteSeoRedirect(models.Model):
+    _name = 'website.seo.redirect'
+
+    """Class used to store old urls for each resource. With these urls the
+       website can do redirect 301 if some url has changed.
+
+       The field 'resource' can't be a strong reference because
+       the model website.seo.metadata is used to inherit and the fields
+       actually are in the resources (eg. ir.ui.view, blog.blog).
+    """
+
+    url = fields.Char(string='URL', translate=True)
+    resource = fields.Char(string='Resource', help='This field use the format model,id')
 
 
 class WebsiteSeoInformation(models.Model):

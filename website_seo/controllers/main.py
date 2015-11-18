@@ -60,13 +60,15 @@ class Website(Website):
         return request.render(page, {})
 
     def look_for_redirect_url(self, seo_url, **kwargs):
-        domain = ['|', ('seo_url_redirect', '!=', False), ('seo_url', '=', seo_url)]
-        for view in request.env['ir.ui.view'].search(domain):
-            if not seo_url.startswith('/'):
-                seo_url = '/%s' % seo_url
-            if not view.seo_url_redirect or (seo_url in view.seo_url_redirect.split(',')):
-                return view.get_seo_path()[0]
-        return False
+        env = request.env(context=request.context)
+        if not seo_url.startswith('/'):
+            seo_url = '/%s' % seo_url
+        domain = [('url', '=', seo_url)]
+        data = env['website.seo.redirect'].search(domain)
+        if data:
+            model, rid = data[0].resource.split(',')
+            resource = env[model].browse(int(rid))
+            return resource.get_seo_path()[0]
 
     @http.route()
     def page(self, page, **opt):
