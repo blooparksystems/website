@@ -71,3 +71,13 @@ msgstr ""
 "page \"study\". If all pages are configured correct the page "
 "\"how-to-do-it-right\" is rendered when calling "
 "\"/ecommerce/study/how-to-do-it-right\"."
+
+#. module: website_seo
+#: model:website.seo.information,information:website_seo.field_title_tip
+msgid "The title tag refers to the topic of the HTML page. It is very important for Google and should describe the content very well. The title tag is displayed in the Google search results pages. The title tag should have a maximum of 55 characters (including spaces). It can also have more characters, it will be cut in the search results. If possible the keyword should be at the beginning."
+msgstr "The title tag refers to the topic of the HTML page. It is very important for Google and should describe the content very well. The title tag is displayed in the Google search results pages. The title tag should have a maximum of 55 characters (including spaces). It can also have more characters, it will be cut in the search results. If possible the keyword should be at the beginning."
+
+#. module: website_seo
+#: model:website.seo.information,information:website_seo.field_description_tip
+msgid "The meta description will be displayed on the Google search results pages. The meta description is a detailed characterization of the HTML page. It should encourage users to click on the search result (Call-to-Action). The length should be a maximum of 156 characters (including spaces)."
+msgstr "The meta description will be displayed on the Google search results pages. The meta description is a detailed characterization of the HTML page. It should encourage users to click on the search result (Call-to-Action). The length should be a maximum of 156 characters (including spaces)."

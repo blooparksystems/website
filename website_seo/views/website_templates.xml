@@ -10,9 +10,15 @@
 
     <template id="canonical_tag" inherit_id="website.layout" >
         <xpath expr="//t[@t-set='languages']" position="before">
-            <link rel="canonical" t-att-href="request.httprequest.url"/>
+            <link rel="canonical" t-att-href="website.get_canonical_url(request.httprequest)"/>
         </xpath>
     </template>
+
+    <!--<template id="hide_promote_panel_button" inherit_id="website.user_navbar" >-->
+        <!--<xpath expr="//a[@id='promote-menu-button']" position="attributes">-->
+            <!--<attribute name="t-if">editable</attribute>-->
+        <!--</xpath>-->
+    <!--</template>-->
 
   </data>
 </openerp>

@@ -71,6 +71,18 @@ class Blog(models.Model):
 
         return True
 
+    @api.multi
+    def write(self, vals):
+        if vals.get('seo_url', False):
+            for obj in self:
+                urls = ['/blog/%s' % int(obj.id), obj.get_seo_path()[0]]
+                super(Blog, obj).write(vals)
+                menus = self.env['website.menu'].search([('url', 'in', urls)])
+                if menus:
+                    menus[0].write({'url': obj.get_seo_path()[0]})
+            return True
+        return super(Blog, self).write(vals)
+
 
 class BlogPost(models.Model):
 
@@ -102,9 +114,20 @@ class BlogPost(models.Model):
         return super(BlogPost, self).create(vals)
 
     @api.multi
+    def write(self, vals):
+        if len(self) == 1 and vals.get('name', False):
+            vals['seo_url'] = slug((1, vals['name']))
+        return super(BlogPost, self).write(vals)
+
+    @api.multi
     def onchange_name(self, name=False, seo_url=False):
         """If SEO url is empty generate the SEO url when changing the name."""
         return self.env['blog.blog'].onchange_name(name, seo_url)
+
+    @api.one
+    def get_seo_path(self):
+        self.env['ir.translation'].clear_caches()
+        return '/%s/%s' % (self.blog_id.seo_url, self.seo_url)
 
 
 class BlogTag(models.Model):

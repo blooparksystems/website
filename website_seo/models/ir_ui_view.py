@@ -110,11 +110,15 @@ class View(models.Model):
 
     @api.multi
     def write(self, vals):
-        res = super(View, self).write(vals)
+        self.clear_caches()
+        lang = self.env.context.get('lang', False)
+        if lang:
+            lang = self.env['res.lang'].get_code_from_alias(lang)
+        res = super(View, self.with_context(lang=lang)).write(vals)
         fields = ['seo_url', 'seo_url_parent', 'seo_url_level']
         if set(fields).intersection(set(vals.keys())):
-            self.update_related_views()
-            self.update_website_menus()
+            self.with_context(lang=lang).update_related_views()
+            self.with_context(lang=lang).update_website_menus()
         return res
 
     @api.multi
@@ -138,6 +142,7 @@ class View(models.Model):
 
     @api.one
     def get_seo_path(self):
+        self.env['ir.translation'].clear_caches()
         seo_url_parts = self.get_seo_url_parts()[0]
         if len(seo_url_parts) == self.seo_url_level + 1:
             seo_url_parts.reverse()

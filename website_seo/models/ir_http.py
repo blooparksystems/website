@@ -29,13 +29,10 @@ class IrHttp(models.TransientModel):
 
     def _find_handler(self, return_rule=False):
         """Update handler finding to avoid endless recursion."""
-        handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
 
-        # ToDo: I reuse some parts of the _dispatch() function in
-        # addons/website/models/ir_http.py, maybe we can re-structure
-        # (complete overwrite) this function to have the needed values at this
-        # place
         path = request.httprequest.path.split('/')
+
+        handler = super(IrHttp, self)._find_handler(return_rule=return_rule)
 
         request.website = request.registry['website'].get_current_website(
             request.cr, request.uid, context=request.context)
