@@ -81,10 +81,3 @@ msgstr "Der Title Tag bezieht sich auf das Thema der HTML Seite. Es ist für Goo
 #: model:website.seo.information,information:website_seo.field_description_tip
 msgid "The meta description will be displayed on the Google search results pages. The meta description is a detailed characterization of the HTML page. It should encourage users to click on the search result (Call-to-Action). The length should be a maximum of 156 characters (including spaces)."
 msgstr "Die Meta Beschreibung wird auf den Google Suchergebnisseiten angezeigt. Die Meta Beschreibung ist eine nähere Charakterisierung der HTML Seite. Sie soll Benutzer animieren auf das Suchergebnis zu klicken (Call-to-Action). Die Länge sollte maximal 156 Zeichen (mit Leerzeichen) betragen."
-
-#. module: website_seo
-#. openerp-web
-#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:8
-#, python-format
-msgid "This form will save only the configuration for the selected language. If you change the language before save the SEO information recently changed will be lost."
-msgstr "Dieses Formular wird nur die Konfiguration für die ausgewählte Sprache zu speichern. Wenn Sie die Sprache ändern, bevor speichern Sie die SEO-Informationen vor kurzem geändert, gehen verloren."

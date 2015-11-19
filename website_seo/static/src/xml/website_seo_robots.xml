@@ -5,15 +5,6 @@
     <t t-jquery="section div.form-horizontal.mt16" t-operation="replace">
         <div class="form-horizontal mt16" role="form">
 
-          <div class="alert alert-warning">This form will save only the configuration for the selected language. If you change the language before save the SEO information recently changed will be lost.</div>
-
-          <div class="hidden form-group">
-              <label for="seo_url_page_language" class="col-lg-2 control-label">Language:</label>
-              <div class="col-lg-8">
-                  <select name="seo_url_page_language" id="seo-language-box" class="form-control"/>
-              </div>
-          </div>
-
           <div class="js_seo_website_meta_title_tips" />
           <div class="form-group">
             <label for="seo_page_title" class="col-lg-2 control-label">Title</label>
