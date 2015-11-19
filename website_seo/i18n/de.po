@@ -42,12 +42,6 @@ msgid "Only a-z, A-Z, 0-9, - and _ are allowed characters for the SEO url."
 msgstr "Nur a-z, A-Z, 0-9, - and _ sind erlaubte Zeichen für die SEO Url."
 
 #. module: website_seo
-#: code:addons/website_seo/static/src/xml/website_seo_robots.xml
-#, python-format
-msgid "Robots Content"
-msgstr "Robots Inhalt"
-
-#. module: website_seo
 #: help:ir.ui.view,seo_url_parent:0
 msgid ""
 "The SEO Parent field is used to describe hierarchical urls like "
@@ -89,3 +83,90 @@ msgstr "Die Meta Beschreibung wird auf den Google Suchergebnisseiten angezeigt. 
 msgid ""
 "This form will save only the configuration for the selected language. If you change the language before save the SEO information recently changed will be lost."
 msgstr "Dieses Formular wird nur die Konfiguration für die ausgewählte Sprache speichern. Wenn Sie die Sprache wechseln, bevor Sie die SEO-Informationen speichern, gehen diese Daten verloren."
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:13
+#, python-format
+msgid "Language:"
+msgstr "Sprache:"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:21
+#, python-format
+msgid "Page Title"
+msgstr "Seitentitel"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:32
+#, python-format
+msgid "Description"
+msgstr "Beschreibung"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:42
+#, python-format
+msgid "Robots Content"
+msgstr "Robots Inhalt"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:45
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "INDEX,FOLLOW"
+msgstr "INDEX,FOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:47
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "INDEX,NOFOLLOW"
+msgstr "INDEX,NOFOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:46
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "NOINDEX,FOLLOW"
+msgstr "NOINDEX,FOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:48
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "NOINDEX,NOFOLLOW"
+msgstr "NOINDEX,NOFOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:54
+#, python-format
+msgid "SEO URL"
+msgstr "SEO URL"
+
+#. module: website_seo
+#: model:ir.ui.view,arch_db:website_seo.view_website_config_settings
+msgid "SEO Pages"
+msgstr "SEO Seiten"
+
+#. module: website_seo
+#: model:ir.ui.view,arch_db:website_seo.view_website_config_settings
+msgid "Configure SEO pages"
+msgstr "Konfiguriere SEO Seiten"
+
+#. module: website_seo
+#: model:ir.actions.act_window,name:website_seo.action_website_seo_pages
+#: model:ir.ui.view,arch_db:website_seo.website_seo_pages_tree
+msgid "Website SEO Pages"
+msgstr "Webseite SEO Seiten"
