@@ -38,7 +38,6 @@
             'keyup input[name=seo_url]': 'seoUrlChanged',
             'click button[data-action=add]': 'addKeyword',
             'click button[data-action=update]': 'update',
-            'change select[name=seo_url_page_language]': 'changeLanguage',
             'hidden.bs.modal': 'destroy'
         },
         canEditRobots: false,
@@ -84,24 +83,6 @@
             self.disableUnsavableFields();
             self.renderPreview();
             $modal.modal();
-            self.getLanguages();
-        },
-        getLanguages: function(){
-            var self = this;
-            openerp.jsonRpc('/web/dataset/call_kw', 'call', {
-                model: 'website',
-                method: 'get_languages',
-                args: [],
-                kwargs: {
-                    ids: [website.get_context().website_id],
-                    context: website.get_context()
-                }
-            }).then( function(data) {
-                self.$('#seo-language-box').html(openerp.qweb.render('website_seo.language_promote', {
-                    'language': data,
-                    'def_lang': website.get_context().lang
-                }));
-            });
         },
         disableUnsavableFields: function () {
             var self = this;
@@ -294,17 +275,6 @@
         },
         getCurrentLanguage: function () {
             return this.$('#seo-language-box').val();
-        },
-        changeLanguage: function() {
-            var self = this;
-            this.loadMetaData().then(function(data){
-                var $modal = self.$el;
-                $modal.find('input[name=seo_page_title]').val(data.website_meta_title);
-                $modal.find('textarea[name=seo_page_description]').val(data.website_meta_description || '');
-                $modal.find('select[name=seo_page_robots]').val(data.website_meta_robots);
-                $modal.find('input[name=seo_url]').val(data.seo_url || '');
-                self.renderPreview();
-            });
         }
     });
 
