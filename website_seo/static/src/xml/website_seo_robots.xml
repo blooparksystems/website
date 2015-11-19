@@ -18,7 +18,7 @@
 
           <div class="js_seo_website_meta_title_tips" />
           <div class="form-group">
-            <label for="seo_page_title" class="col-lg-2 control-label">Title</label>
+            <label for="seo_page_title" class="col-lg-2 control-label">Page Title</label>
             <div class="col-lg-8">
                 <input type="text" name="seo_page_title" class="form-control" maxlength="70" size="70"/>
             </div>
