@@ -42,12 +42,6 @@ msgid "Only a-z, A-Z, 0-9, - and _ are allowed characters for the SEO url."
 msgstr "Only a-z, A-Z, 0-9, - and _ are allowed characters for the SEO url."
 
 #. module: website_seo
-#: code:addons/website_seo/static/src/xml/website_seo_robots.xml
-#, python-format
-msgid "Robots Content"
-msgstr "Robots Content"
-
-#. module: website_seo
 #: help:ir.ui.view,seo_url_parent:0
 msgid ""
 "The SEO Parent field is used to describe hierarchical urls like "
@@ -81,3 +75,83 @@ msgstr "The title tag refers to the topic of the HTML page. It is very important
 #: model:website.seo.information,information:website_seo.field_description_tip
 msgid "The meta description will be displayed on the Google search results pages. The meta description is a detailed characterization of the HTML page. It should encourage users to click on the search result (Call-to-Action). The length should be a maximum of 156 characters (including spaces)."
 msgstr "The meta description will be displayed on the Google search results pages. The meta description is a detailed characterization of the HTML page. It should encourage users to click on the search result (Call-to-Action). The length should be a maximum of 156 characters (including spaces)."
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:8
+#, python-format
+msgid "Page Title"
+msgstr "Page Title"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:29
+#, python-format
+msgid "Robots Content"
+msgstr "Robots Content"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:19
+#, python-format
+msgid "Description"
+msgstr "Description"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:32
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "INDEX,FOLLOW"
+msgstr "INDEX,FOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:34
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "INDEX,NOFOLLOW"
+msgstr "INDEX,NOFOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:33
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "NOINDEX,FOLLOW"
+msgstr "NOINDEX,FOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:35
+#: selection:ir.ui.view,website_meta_robots:0
+#: selection:website.seo.metadata,website_meta_robots:0
+#, python-format
+msgid "NOINDEX,NOFOLLOW"
+msgstr "NOINDEX,NOFOLLOW"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/xml/website_seo_robots.xml:41
+#, python-format
+msgid "SEO URL"
+msgstr "SEO URL"
+
+#. module: website_seo
+#: view:website.config.settings:website_seo.view_website_config_settings
+msgid "SEO Pages"
+msgstr "SEO Pages"
+
+#. module: website_seo
+#: view:website.config.settings:website_seo.view_website_config_settings
+msgid "Configure SEO pages"
+msgstr "Configure SEO pages"
+
+#. module: website_seo
+#: model:ir.actions.act_window,name:website_seo.action_website_seo_pages
+#: view:ir.ui.view:website_seo.website_seo_pages_tree
+msgid "Website SEO Pages"
+msgstr "Website SEO Pages"
