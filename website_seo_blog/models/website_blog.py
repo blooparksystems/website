@@ -19,8 +19,10 @@
 #
 ##############################################################################
 from openerp import api, fields, models
-from openerp.addons.website_seo.models.website import slug, META_ROBOTS
+from openerp.addons.website_seo.models.website import slug, META_ROBOTS, KNOWN_URLS
 from openerp.tools.translate import _
+
+KNOWN_URLS.append('blog')
 
 
 class Blog(models.Model):

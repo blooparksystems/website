@@ -35,7 +35,7 @@ def url_for_lang(location, lang):
         url_parts = location.split('/')
         blog_url = url_parts.pop(0)
         while blog_url in ['', 'blog']:
-            blog_url = url_parts.pop(0)
+            blog_url = len(url_parts) and url_parts.pop(0) or url_parts
         blogs = blog_obj.search(request.cr, request.uid,
                                 [('seo_url', '=', blog_url)],
                                 context=ctx)
