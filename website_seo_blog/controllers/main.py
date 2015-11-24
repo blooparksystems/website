@@ -62,81 +62,38 @@ class QueryURL(QueryURL):
         return path
 
 
-class Website(BaseWebsite):
-
-    @http.route(['/<path:seo_url>'], type='http', auth="public", website=True)
-    def path_page(self, seo_url, **post):
-
-        pages = ['website.404', 'website.page_404']
-        response = super(Website, self).path_page(seo_url, **post)
-        if response._status_code == 301:
-            return response
-        if response.template not in pages:
-            return request.website.render(response.template)
-
-        env = request.env(context=request.context)
-        seo_url_parts = [s.encode('utf8') for s in seo_url.split('/')
-                         if s != '']
-        seo_url_blog = seo_url_parts.pop(0)
-
-        blogs = env['blog.blog'].search([('seo_url', '=', seo_url_blog)])
-        if blogs:
-            blog_instance = WebsiteBlog()
-            if seo_url_parts:
-                tags = env['blog.tag'].search([('seo_url', '=', seo_url_parts[0])])
-                if tags:
-                    return blog_instance.blog(blogs[0], tag=tags[0], **post)
-                else:
-                    blog_posts = env['blog.post'].search([
-                        ('blog_id', 'in', [x.id for x in blogs]),
-                        ('seo_url', '=', seo_url_parts[0])
-                    ])
-                    if blog_posts:
-                        return blog_instance.blog_post(blog_posts[0].blog_id,
-                                                       blog_posts[0], **post)
-            else:
-                return blog_instance.blog(blogs[0], **post)
-
-        page = pages[0]
-        if env.user.login != 'public':
-            page = pages[1]
-        return request.render(page, {})
-
-
 class WebsiteBlog(WebsiteBlog):
 
     @http.route()
     def blogs(self, page=1, **post):
         """Update blog url of original blogs function with SEO url."""
+
         response = super(WebsiteBlog, self).blogs(page=page, **post)
-        response.qcontext.update({'blog_url': QueryURL('', ['blog', 'tag'])})
+        response.qcontext.update({'blog_url': QueryURL('/blog', ['blog', 'tag'])})
 
         return request.website.render(response.template, response.qcontext)
 
     @http.route()
     def blog(self, blog=None, tag=None, page=1, **opt):
         """Update blog url and pager of original blog function with SEO url."""
-        # - request.env.context contains always "'lang': u'en_US'" regardless
-        # of the used frontend language which results in not found non english
-        # blogs, so we update request.env.context with request.context
+
         env = request.env(context=request.context)
         blog_post_obj = env['blog.post']
         date_end = opt.get('date_end')
         response = super(WebsiteBlog, self).blog(blog=blog, tag=None, page=page,
                                                  **opt)
         values = response.qcontext
-        blog_url = QueryURL('', ['blog', 'tag'], blog=blog, tag=tag,
+        blog_url = QueryURL('/blog', ['blog', 'tag'], blog=blog, tag=tag,
                             date_begin=values['date'], date_end=date_end)
 
         domain = []
         if blog:
             domain += [('blog_id', '=', blog.id)]
         if tag:
-            domain += [('tag_ids', 'in', tag.id)]
+            domain += [('tag_ids', 'in', [tag.id])]
         if values['date'] and date_end:
             domain += [("create_date", ">=", values['date']),
                        ("create_date", "<=", date_end)]
-
         blog_posts = blog_post_obj.search(domain, order="create_date desc")
 
         pager = request.website.pager(
@@ -147,6 +104,7 @@ class WebsiteBlog(WebsiteBlog):
         )
 
         values.update({
+            'blog_posts': blog_posts,
             'blog_url': blog_url,
             'pager': pager,
             'main_object': tag or blog
@@ -158,13 +116,38 @@ class WebsiteBlog(WebsiteBlog):
     def blog_post(self, blog, blog_post, tag_id=None, page=1,
                   enable_editor=None, **post):
         """Update blog url of original blog_post function with SEO url."""
+
         date_end = post.get('date_end')
         response = super(WebsiteBlog, self).blog_post(
             blog=blog, blog_post=blog_post, tag_id=tag_id, page=page,
             enable_editor=enable_editor, **post)
         values = response.qcontext
         values.update({'blog_url': QueryURL(
-            '', ['blog', 'tag'], blog=blog_post.blog_id, tag=values['tag'],
+            '/blog', ['blog', 'tag'], blog=blog_post.blog_id, tag=values['tag'],
             date_begin=values['date'], date_end=date_end)})
 
         return request.website.render(response.template, values)
+
+
+class Website(BaseWebsite):
+
+    @http.route([
+        '/blog/<string:seo_url>',
+        '/blog/<string:seo_url>/<string:seo_url_tag>'
+    ], type='http', auth="public", website=True)
+    def blog_seo_url(self, seo_url, seo_url_tag=None, **opt):
+        website = WebsiteBlog()
+        env = request.env(context=request.context)
+        domain = [('seo_url', '=', seo_url)]
+
+        blog = env['blog.blog'].search(domain)
+        if blog:
+            tags = env['blog.tag'].search([('seo_url', '=', seo_url_tag)])
+            tag = tags and tags[0] or False
+            return website.blog(blog=blog[0], tag=tag, **opt)
+        post = env['blog.post'].search(domain)
+        if post:
+            return website.blog_post(post[0].blog_id, post[0], **opt)
+
+        # TODO: use defaults urls instead
+        return request.redirect('/blog')
