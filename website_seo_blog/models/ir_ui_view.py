@@ -35,7 +35,10 @@ def url_for_lang(location, lang):
         url_parts = location.split('/')
         blog_url = url_parts.pop(0)
         while blog_url in ['', 'blog']:
-            blog_url = len(url_parts) and url_parts.pop(0) or url_parts
+            if len(url_parts):
+                blog_url = url_parts.pop(0)
+            else:
+                break
         blogs = blog_obj.search(request.cr, request.uid,
                                 [('seo_url', '=', blog_url)],
                                 context=ctx)
@@ -49,12 +52,12 @@ def url_for_lang(location, lang):
                 ctx.update({'lang': lang})
                 post = post_obj.browse(request.cr, request.uid,
                                        posts[0], context=ctx)
-                location = '/%s/%s' % (post.blog_id.seo_url, post.seo_url)
+                location = '/blog/%s' % post.seo_url
         elif blogs:
             ctx.update({'lang': lang})
             blog = blog_obj.browse(request.cr, request.uid,
                                    blogs[0], context=ctx)
-            location = '/%s' % blog.seo_url
+            location = '/blog/%s' % blog.seo_url
     else:
         location = translated_location
     return location
