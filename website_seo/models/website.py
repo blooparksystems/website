@@ -254,8 +254,13 @@ class WebsiteSeoMetadata(models.Model):
         if self.seo_url:
             seo_url = self.get_seo_path()[0]
             if seo_url not in [x.url for x in self.seo_url_redirect]:
+                lang = self.env.context.get('lang', False)
+                if not lang:
+                    lang = self.env['website'].get_current_website().default_lang_code
+                lang = self.env['res.lang'].get_code_from_alias(lang)
                 redirect = {
                     'url': seo_url,
+                    'lang': lang,
                     'resource': '%s,%s' % (self._name, self.id)
                 }
                 self.env['website.seo.redirect'].create(redirect)
@@ -293,7 +298,8 @@ class WebsiteSeoRedirect(models.Model):
        actually are in the resources (eg. ir.ui.view, blog.blog).
     """
 
-    url = fields.Char(string='URL', translate=True)
+    url = fields.Char(string='URL')
+    lang = fields.Char(string='Lang')
     resource = fields.Char(string='Resource', help='This field use the format model,id')
 
 
