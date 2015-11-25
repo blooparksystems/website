@@ -32,11 +32,8 @@ def url_for_lang(location, lang):
             return location
         url_parts = location.split('/')
         seo_url = url_parts.pop(0)
-        while seo_url in ['', 'blog']:
-            if len(url_parts):
-                seo_url = url_parts.pop(0)
-            else:
-                break
+        while seo_url in ['', 'blog'] and len(url_parts):
+            seo_url = url_parts.pop(0)
 
         ctx = request.context.copy()
         cr, uid, reg = request.cr, request.uid, request.registry

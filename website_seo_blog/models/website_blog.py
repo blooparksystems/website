@@ -200,5 +200,7 @@ class Website(models.Model):
     _inherit = 'website'
 
     website_blog_tag_default_meta_robots = fields.Selection(META_ROBOTS,
-                                                            string='Website blog tag default meta robots',
+                                                            string='Website blog '
+                                                                   'tag default '
+                                                                   'meta robots',
                                                             translate=True)
