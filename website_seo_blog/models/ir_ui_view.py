@@ -30,34 +30,25 @@ def url_for_lang(location, lang):
     if translated_location == location:
         if not request.registry.get('blog.blog', False):
             return location
-        blog_obj = request.registry['blog.blog']
-        ctx = request.context.copy()
         url_parts = location.split('/')
-        blog_url = url_parts.pop(0)
-        while blog_url in ['', 'blog']:
+        seo_url = url_parts.pop(0)
+        while seo_url in ['', 'blog']:
             if len(url_parts):
-                blog_url = url_parts.pop(0)
+                seo_url = url_parts.pop(0)
             else:
                 break
-        blogs = blog_obj.search(request.cr, request.uid,
-                                [('seo_url', '=', blog_url)],
-                                context=ctx)
-        if blogs and url_parts:
-            post_obj = request.registry['blog.post']
-            posts = post_obj.search(request.cr, request.uid,
-                                    [('blog_id', '=', blogs[0]),
-                                     ('seo_url', '=', url_parts[0])],
-                                    context=ctx)
-            if posts:
+
+        ctx = request.context.copy()
+        cr, uid, reg = request.cr, request.uid, request.registry
+        domain = [('seo_url', '=', seo_url)]
+        models = ['blog.blog', 'blog.post']
+        for model in models:
+            obj_ids = reg[model].search(cr, uid, domain, context=ctx)
+            if obj_ids:
                 ctx.update({'lang': lang})
-                post = post_obj.browse(request.cr, request.uid,
-                                       posts[0], context=ctx)
-                location = '/blog/%s' % post.seo_url
-        elif blogs:
-            ctx.update({'lang': lang})
-            blog = blog_obj.browse(request.cr, request.uid,
-                                   blogs[0], context=ctx)
-            location = '/blog/%s' % blog.seo_url
+                obj = reg[model].browse(cr, uid, obj_ids[0], context=ctx)
+                location = '/blog/%s' % obj.seo_url
+                break
     else:
         location = translated_location
     return location
