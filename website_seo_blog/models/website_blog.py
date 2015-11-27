@@ -19,8 +19,10 @@
 #
 ##############################################################################
 from openerp import api, fields, models
-from openerp.addons.website_seo.models.website import slug, META_ROBOTS
+from openerp.addons.website_seo.models.website import slug, META_ROBOTS, KNOWN_URLS
 from openerp.tools.translate import _
+
+KNOWN_URLS.append('blog')
 
 
 class Blog(models.Model):
@@ -62,7 +64,11 @@ class Blog(models.Model):
         lang = self.env.context.get('lang', False)
         if lang:
             lang = self.env['res.lang'].get_code_from_alias(lang)
-        return super(Blog, self.with_context(lang=lang)).write(vals)
+        for obj in self:
+            seo_path = obj.get_seo_path()[0]
+            super(Blog, obj.with_context(lang=lang)).write(vals)
+            obj.update_menu(seo_path)
+        return True
 
     @api.model
     def add_seo_url(self):
@@ -77,6 +83,20 @@ class Blog(models.Model):
             post.write({'seo_url': slug(post)})
 
         return True
+
+    @api.one
+    def get_seo_path(self):
+        return '/blog/%s' % self.seo_url
+
+    @api.one
+    def update_menu(self, url):
+        menu_obj = self.env['website.menu']
+        menu = menu_obj.search([('url', '=', url)])
+        if not menu:
+            old_url = '/blog/%s' % str(self.id)
+            menu = menu_obj.search([('url', '=', old_url)])
+        if menu:
+            menu.write({'url': self.get_seo_path()[0]})
 
 
 class BlogPost(models.Model):
@@ -125,7 +145,7 @@ class BlogPost(models.Model):
 
     @api.one
     def get_seo_path(self):
-        return '/%s/%s' % (self.blog_id.seo_url, self.seo_url)
+        return '/blog/%s' % self.seo_url
 
 
 class BlogTag(models.Model):
@@ -180,5 +200,7 @@ class Website(models.Model):
     _inherit = 'website'
 
     website_blog_tag_default_meta_robots = fields.Selection(META_ROBOTS,
-                                                            string='Website blog tag default meta robots',
+                                                            string='Website blog '
+                                                                   'tag default '
+                                                                   'meta robots',
                                                             translate=True)

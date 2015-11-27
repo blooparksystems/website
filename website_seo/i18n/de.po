@@ -170,3 +170,17 @@ msgstr "Konfiguriere SEO Seiten"
 #: model:ir.ui.view,arch_db:website_seo.website_seo_pages_tree
 msgid "Website SEO Pages"
 msgstr "Webseite SEO Seiten"
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/js/seo_robots.js:509
+#, python-format
+msgid "Invalid SEO URL. The allowed characters are a-z, A-Z, 0-9, - and _."
+msgstr "Invalid SEO URL. The allowed characters are a-z, A-Z, 0-9, - and _."
+
+#. module: website_seo
+#. openerp-web
+#: code:addons/website_seo/static/src/js/seo_robots.js:512
+#, python-format
+msgid "The SEO URL '%s' is already taken in the application."
+msgstr "The SEO URL '%s' is already taken in the application."

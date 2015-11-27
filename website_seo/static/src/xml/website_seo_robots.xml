@@ -50,6 +50,7 @@
             </div>
           </div>
 
+          <div class="js_seo_url_tips" />
           <div class="form-group">
               <label for="seo_url" class="col-lg-2 control-label">SEO URL</label>
               <div class="col-lg-8">
