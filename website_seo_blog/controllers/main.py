@@ -149,5 +149,9 @@ class Website(BaseWebsite):
         if post:
             return website.blog_post(post[0].blog_id, post[0], **opt)
 
+        url = self.look_for_redirect_url('/blog/%s' % seo_url, **opt)
+        if url:
+            return request.redirect(url, code=301)
+
         # TODO: use defaults urls instead
         return request.redirect('/blog')
