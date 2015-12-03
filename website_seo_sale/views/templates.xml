@@ -3,6 +3,8 @@
 <openerp>
     <data>
 
+        <!-- product -->
+
         <template id="products_item" name="Products item" inherit_id="website_sale.products_item">
             <xpath expr="//div[@class='oe_product_image']" position="replace">
               <div class="oe_product_image">
@@ -78,6 +80,75 @@
                 </a>
             </xpath>
         </template>
+
+        <!-- Categories -->
+
+        <template id="search" name="Search hidden fields" inherit_id="website_sale.search">
+            <xpath expr="//form" position="replace">
+                <form t-att-action="keep('/'+ (slug(category)) if category else '', search=0)" method="get" t-att-class="search_class">
+                    <t t-if="attrib_values">
+                      <t t-foreach="attrib_values" t-as="a">
+                        <input type="hidden" name="attrib" t-att-value="'%s-%s' % (a[0], a[1])"/>
+                      </t>
+                    </t>
+                    <t t-call="website.website_search_box"/>
+                </form>
+            </xpath>
+        </template>
+
+        <template id="categories_recursive" name="Category list" inherit_id="website_sale.categories_recursive">
+            <xpath expr="//li" position="replace">
+                <li t-att-class="'active' if c.id == int(category or 0) else ''">
+                  <a t-att-href="keep('/' + slug(c), category=0)" t-field="c.name"></a>
+                  <ul t-if="c.child_id" class="nav nav-pills nav-stacked nav-hierarchy">
+                      <t t-foreach="c.child_id" t-as="c">
+                          <t t-call="website_seo_sale.categories_recursive"/>
+                      </t>
+                  </ul>
+                </li>
+            </xpath>
+        </template>
+
+        <template id="option_collapse_categories_recursive" name="Collapse Category Recursive" inherit_id="website_sale.option_collapse_categories_recursive">
+            <xpath expr="//li" position="replace">
+                <li t-att-class="'active' if categ.id == int(category or 0) else ''">
+                  <i t-if="categ.child_id" t-attf-class="text-primary fa #{'fa-chevron-down' if categ.id in parent_category_ids else 'fa-chevron-right'}"/>
+                  <a t-att-href="keep('/' + slug(categ), category=0)" t-field="categ.name"></a>
+                  <ul t-if="categ.child_id" class="nav nav-pills nav-stacked nav-hierarchy" t-att-style="'display:block;' if categ.id in parent_category_ids else 'display:none;'">
+                       <t t-foreach="categ.child_id" t-as="categ">
+                          <t t-call="website_seo_sale.option_collapse_categories_recursive"/>
+                      </t>
+                  </ul>
+                </li>
+            </xpath>
+        </template>
+
+        <template id="option_collapse_products_categories" name="Collapsible Category List" inherit_id="website_sale.products_categories" active="False" customize_show="True">
+          <xpath expr="//div[@id='products_grid_before']/ul" position="replace">
+              <ul class="nav nav-pills nav-stacked mt16" id="o_shop_collapse_category">
+                  <li t-att-class=" '' if category else 'active' ">
+                    <a t-att-href="keep('/',category=0)">All Products</a>
+                  </li>
+                  <t t-foreach="categories" t-as="categ">
+                      <t t-call="website_seo_sale.option_collapse_categories_recursive"/>
+                  </t>
+              </ul>
+          </xpath>
+        </template>
+
+
+        <template id="product" name="Product" inherit_id="website_sale.product">
+            <xpath expr="//t/t/div/section/div" position="replace">
+                <div class="col-sm-4">
+                    <ol class="breadcrumb">
+                        <li><a t-att-href="keep(category=0)">Products</a></li>
+                        <li t-if="category"><a t-att-href="keep('/%s' % slug(category), category=0)" t-field="category.name"/></li>
+                        <li class="active"><span t-field="product.name"/></li>
+                    </ol>
+                </div>
+            </xpath>
+        </template>
+
 
     </data>
 </openerp>

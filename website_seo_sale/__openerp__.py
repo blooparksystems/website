@@ -18,5 +18,5 @@ OpenERP E-Commerce SEO Optimized
     ],
     'qweb': ['static/src/xml/*.xml'],
     'installable': True,
-    'application': True,
+    'application': False,
 }

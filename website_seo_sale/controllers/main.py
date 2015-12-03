@@ -20,8 +20,8 @@ class website_seo_sale(website_sale):
     @http.route([
         '/shop',
         '/shop/page/<int:page>',
-        '/shop/category/<model("product.public.category"):category>',
-        '/shop/category/<model("product.public.category"):category>/page/<int:page>'
+        '/<model("product.public.category"):category>',
+        '/<model("product.public.category"):category>/page/<int:page>'
     ], type='http', auth="public", website=True)
     def shop(self, page=0, category=None, search='', ppg=False, **post):
 
@@ -75,7 +75,7 @@ class website_seo_sale(website_sale):
             post["search"] = search
         if category:
             category = pool['product.public.category'].browse(cr, uid, int(category), context=context)
-            url = "/shop/category/%s" % slug(category)
+            url = "/%s" % slug(category)
         if attrib_list:
             post['attrib'] = attrib_list
 
@@ -149,7 +149,7 @@ class website_seo_sale(website_sale):
         attrib_values = [map(int,v.split("-")) for v in attrib_list if v]
         attrib_set = set([v[1] for v in attrib_values])
 
-        keep = QueryURL('/shop', category=category and category.id, search=search, attrib=attrib_list)
+        keep = QueryURL('/shop/', category=category and category.id, search=search, attrib=attrib_list)
 
         category_ids = category_obj.search(cr, uid, [('parent_id', '=', False)], context=context)
         categs = category_obj.browse(cr, uid, category_ids, context=context)
