@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<openerp>
+    <data>
+
+        <template id="products_item" name="Products item" inherit_id="website_sale.products_item">
+            <xpath expr="//div[@class='oe_product_image']" position="replace">
+              <div class="oe_product_image">
+                  <a itemprop="url" t-att-href="keep('/shop/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))">
+                      <span itemprop="image" t-field="product.image" t-field-options='{"widget": "image" #{None if product_image_big else ", \"resize\": \"300x300\""}}' t-att-alt="product.name"/>
+                  </a>
+              </div>
+            </xpath>
+
+            <xpath expr="//a[@itemprop='name']" position="replace">
+                <a itemprop="name" t-att-href="keep('/shop/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))" t-field="product.name"/>
+            </xpath>
+        </template>
+
+        <template id="products_add_to_cart" inherit_id="website_sale.products_add_to_cart" active="False" customize_show="True" name="Add to Cart">
+            <xpath expr="//a[@class='btn btn-default btn-xs']" position="replace">
+                <a class="btn btn-default btn-xs" t-att-href="keep('/shop/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))"><span class="fa fa-shopping-cart"/></a>
+            </xpath>
+        </template>
+
+        <template id="recommended_products" inherit_id="website_sale.recommended_products" customize_show="True" name="Suggested Products">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(product) }']" position="after">
+                <a t-attf-href="/shop/#{ slug(product) }" style="display: block">
+                  <span t-att-title='product.name' t-field='product.name' style="display: block;"/>
+                </a>
+            </xpath>
+        </template>
+
+        <template id="cart" name="Shopping Cart" inherit_id="website_sale.cart">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
+                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                  <strong t-esc="line.product_id.with_context(display_default_code=False).display_name"/>
+                </a>
+            </xpath>
+        </template>
+
+        <template id="payment" inherit_id="website_sale.payment">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
+                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                  <span t-field="line.product_id.image_small"
+                        t-field-options='{"widget": "image", "class": "img-rounded"}'/>
+                </a>
+            </xpath>
+        </template>
+
+        <template id="cart_popover" name="Cart Popover" inherit_id="website_sale.cart_popover">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
+                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                    <span t-esc="line.product_id.with_context(display_default_code=False).display_name" class="h6"/>
+                </a>
+            </xpath>
+        </template>
+
+        <template id="suggested_products_list" inherit_id="website_sale.suggested_products_list" customize_show="True" name="Suggested Products in my cart">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(product.product_tmpl_id) }']" position="after">
+                <a t-attf-href="/shop/#{ slug(product.product_tmpl_id) }">
+                  <span t-field="product.image_small"
+                        t-field-options='{"widget": "image", "class": "img-rounded"}'/>
+                </a>
+            </xpath>
+
+            <xpath expr="//a[@t-attf-href='/shop/#{ slug(product.product_tmpl_id) }']" position="replace">
+                <a t-attf-href="/shop/#{ slug(product.product_tmpl_id) }">
+                  <strong t-field="product.display_name"/>
+                </a>
+            </xpath>
+        </template>
+
+        <template id="confirmation" inherit_id="website_sale.confirmation">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
+                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                    <strong t-esc="line.product_id.with_context(display_default_code=False).display_name"/>
+                </a>
+            </xpath>
+        </template>
+
+    </data>
+</openerp>
