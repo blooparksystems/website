@@ -3,31 +3,29 @@
 <openerp>
     <data>
 
-        <!-- product -->
-
         <template id="products_item" name="Products item" inherit_id="website_sale.products_item">
             <xpath expr="//div[@class='oe_product_image']" position="replace">
               <div class="oe_product_image">
-                  <a itemprop="url" t-att-href="keep('/shop/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))">
+                  <a itemprop="url" t-att-href="keep('/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))">
                       <span itemprop="image" t-field="product.image" t-field-options='{"widget": "image" #{None if product_image_big else ", \"resize\": \"300x300\""}}' t-att-alt="product.name"/>
                   </a>
               </div>
             </xpath>
 
             <xpath expr="//a[@itemprop='name']" position="replace">
-                <a itemprop="name" t-att-href="keep('/shop/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))" t-field="product.name"/>
+                <a itemprop="name" t-att-href="keep('/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))" t-field="product.name"/>
             </xpath>
         </template>
 
         <template id="products_add_to_cart" inherit_id="website_sale.products_add_to_cart" active="False" customize_show="True" name="Add to Cart">
             <xpath expr="//a[@class='btn btn-default btn-xs']" position="replace">
-                <a class="btn btn-default btn-xs" t-att-href="keep('/shop/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))"><span class="fa fa-shopping-cart"/></a>
+                <a class="btn btn-default btn-xs" t-att-href="keep('/%s' % slug(product), page=(pager['page']['num'] if pager['page']['num']>1 else None))"><span class="fa fa-shopping-cart"/></a>
             </xpath>
         </template>
 
         <template id="recommended_products" inherit_id="website_sale.recommended_products" customize_show="True" name="Suggested Products">
             <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(product) }']" position="after">
-                <a t-attf-href="/shop/#{ slug(product) }" style="display: block">
+                <a t-attf-href="/#{ slug(product) }" style="display: block">
                   <span t-att-title='product.name' t-field='product.name' style="display: block;"/>
                 </a>
             </xpath>
@@ -35,7 +33,7 @@
 
         <template id="cart" name="Shopping Cart" inherit_id="website_sale.cart">
             <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
-                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                <a t-attf-href="/#{ slug(line.product_id.product_tmpl_id) }">
                   <strong t-esc="line.product_id.with_context(display_default_code=False).display_name"/>
                 </a>
             </xpath>
@@ -43,7 +41,7 @@
 
         <template id="payment" inherit_id="website_sale.payment">
             <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
-                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                <a t-attf-href="/#{ slug(line.product_id.product_tmpl_id) }">
                   <span t-field="line.product_id.image_small"
                         t-field-options='{"widget": "image", "class": "img-rounded"}'/>
                 </a>
@@ -52,7 +50,7 @@
 
         <template id="cart_popover" name="Cart Popover" inherit_id="website_sale.cart_popover">
             <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
-                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                <a t-attf-href="/#{ slug(line.product_id.product_tmpl_id) }">
                     <span t-esc="line.product_id.with_context(display_default_code=False).display_name" class="h6"/>
                 </a>
             </xpath>
@@ -67,7 +65,7 @@
             </xpath>
 
             <xpath expr="//a[@t-attf-href='/shop/#{ slug(product.product_tmpl_id) }']" position="replace">
-                <a t-attf-href="/shop/#{ slug(product.product_tmpl_id) }">
+                <a t-attf-href="/#{ slug(product.product_tmpl_id) }">
                   <strong t-field="product.display_name"/>
                 </a>
             </xpath>
@@ -75,31 +73,16 @@
 
         <template id="confirmation" inherit_id="website_sale.confirmation">
             <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
-                <a t-attf-href="/shop/#{ slug(line.product_id.product_tmpl_id) }">
+                <a t-attf-href="/#{ slug(line.product_id.product_tmpl_id) }">
                     <strong t-esc="line.product_id.with_context(display_default_code=False).display_name"/>
                 </a>
-            </xpath>
-        </template>
-
-        <!-- Categories -->
-
-        <template id="search" name="Search hidden fields" inherit_id="website_sale.search">
-            <xpath expr="//form" position="replace">
-                <form t-att-action="keep('/'+ (slug(category)) if category else '', search=0)" method="get" t-att-class="search_class">
-                    <t t-if="attrib_values">
-                      <t t-foreach="attrib_values" t-as="a">
-                        <input type="hidden" name="attrib" t-att-value="'%s-%s' % (a[0], a[1])"/>
-                      </t>
-                    </t>
-                    <t t-call="website.website_search_box"/>
-                </form>
             </xpath>
         </template>
 
         <template id="categories_recursive" name="Category list" inherit_id="website_sale.categories_recursive">
             <xpath expr="//li" position="replace">
                 <li t-att-class="'active' if c.id == int(category or 0) else ''">
-                  <a t-att-href="keep('/' + slug(c), category=0)" t-field="c.name"></a>
+                  <a t-att-href="keep('/category/%s' % slug(c), category=0)" t-field="c.name"></a>
                   <ul t-if="c.child_id" class="nav nav-pills nav-stacked nav-hierarchy">
                       <t t-foreach="c.child_id" t-as="c">
                           <t t-call="website_seo_sale.categories_recursive"/>
@@ -113,7 +96,7 @@
             <xpath expr="//li" position="replace">
                 <li t-att-class="'active' if categ.id == int(category or 0) else ''">
                   <i t-if="categ.child_id" t-attf-class="text-primary fa #{'fa-chevron-down' if categ.id in parent_category_ids else 'fa-chevron-right'}"/>
-                  <a t-att-href="keep('/' + slug(categ), category=0)" t-field="categ.name"></a>
+                  <a t-att-href="keep('/category/%s' % slug(categ), category=0)" t-field="categ.name"></a>
                   <ul t-if="categ.child_id" class="nav nav-pills nav-stacked nav-hierarchy" t-att-style="'display:block;' if categ.id in parent_category_ids else 'display:none;'">
                        <t t-foreach="categ.child_id" t-as="categ">
                           <t t-call="website_seo_sale.option_collapse_categories_recursive"/>
@@ -127,7 +110,7 @@
           <xpath expr="//div[@id='products_grid_before']/ul" position="replace">
               <ul class="nav nav-pills nav-stacked mt16" id="o_shop_collapse_category">
                   <li t-att-class=" '' if category else 'active' ">
-                    <a t-att-href="keep('/',category=0)">All Products</a>
+                    <a t-att-href="keep('/zzz',category=0)">All Products</a>
                   </li>
                   <t t-foreach="categories" t-as="categ">
                       <t t-call="website_seo_sale.option_collapse_categories_recursive"/>
@@ -135,20 +118,6 @@
               </ul>
           </xpath>
         </template>
-
-
-        <template id="product" name="Product" inherit_id="website_sale.product">
-            <xpath expr="//t/t/div/section/div" position="replace">
-                <div class="col-sm-4">
-                    <ol class="breadcrumb">
-                        <li><a t-att-href="keep(category=0)">Products</a></li>
-                        <li t-if="category"><a t-att-href="keep('/%s' % slug(category), category=0)" t-field="category.name"/></li>
-                        <li class="active"><span t-field="product.name"/></li>
-                    </ol>
-                </div>
-            </xpath>
-        </template>
-
 
     </data>
 </openerp>
