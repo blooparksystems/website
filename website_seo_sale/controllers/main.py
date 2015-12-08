@@ -5,8 +5,8 @@ from openerp import http
 from openerp import tools
 from openerp.http import request
 from openerp.tools.translate import _
-from openerp.addons.website.models.website import slug
 from openerp.addons.website_sale.controllers.main import website_sale, PPG, PPR, QueryURL, table_compute
+from openerp.addons.website_seo_sale.models.website import slug
 
 
 class website_seo_sale(website_sale):
@@ -66,7 +66,7 @@ class website_seo_sale(website_sale):
             if attrib:
                 domain += [('attribute_line_ids.value_ids', 'in', ids)]
 
-        keep = QueryURL('/', category=category and int(category), search=search, attrib=attrib_list)
+        keep = QueryURL('/category', category=category and int(category), search=search, attrib=attrib_list)
 
         if not context.get('pricelist'):
             pricelist = self.get_pricelist()
