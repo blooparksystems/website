@@ -3,6 +3,16 @@
 <openerp>
     <data>
 
+        <template id="product" name="Product" inherit_id="website_sale.product">
+                <xpath expr="//ol[@class='breadcrumb']" position="replace">
+                    <ol class="breadcrumb">
+                        <li><a t-att-href="keep('/shop', category=0)">Products</a></li>
+                        <li t-if="category"><a t-att-href="keep('/category/%s' % slug(category), category=0)" t-field="category.name"/></li>
+                        <li class="active"><span t-field="product.name"/></li>
+                    </ol>
+                </xpath>
+        </template>
+
         <template id="products_item" name="Products item" inherit_id="website_sale.products_item">
             <xpath expr="//div[@class='oe_product_image']" position="replace">
               <div class="oe_product_image">
@@ -106,6 +116,7 @@
             </xpath>
         </template>
 
+        <!--
         <template id="option_collapse_products_categories" name="Collapsible Category List" inherit_id="website_sale.products_categories" active="False" customize_show="True">
           <xpath expr="//div[@id='products_grid_before']/ul" position="replace">
               <ul class="nav nav-pills nav-stacked mt16" id="o_shop_collapse_category">
@@ -118,6 +129,33 @@
               </ul>
           </xpath>
         </template>
+
+
+        <template id="search" name="Search hidden fields" inherit_id="website_sale.search">
+            <xpath expr="//form" position="replace">
+                <form t-att-action="keep('/shop'+ slug(category) if category else '', search=0)" method="get" t-att-class="search_class">
+                    <t t-if="attrib_values">
+                        <t t-foreach="attrib_values" t-as="a">
+                            <input type="hidden" name="attrib" t-att-value="'%s-%s' % (a[0], a[1])"/>
+                        </t>
+                    </t>
+                    <t t-call="website.website_search_box"/>
+                </form>
+            </xpath>
+        </template>
+
+        <template id="products" name="Products" inherit_id="website_sale.products">
+            <xpath expr="//div[@class='products_pager']" position="replace">
+                <div class="products_pager">
+                    <div class="row" style="width: 100%;">
+                      <t t-call="website_seo_sale.search"><t t-set="search_class">pagination form-inline col-md-3</t></t>
+                      <t t-call="website.pager"/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+        -->
+
 
     </data>
 </openerp>

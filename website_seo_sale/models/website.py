@@ -1,6 +1,5 @@
 import re
 from openerp.osv import orm
-from openerp.addons.website.models.website import slugify
 
 
 _UNSLUG_RE = re.compile(r'(?:(\w{1,2}|\w[A-Za-z0-9-_]+?\w))(?=$|/)')
@@ -11,7 +10,4 @@ def slug(value):
     else:
         name = value
 
-    if value._name == 'product.public.category':
-        return name.replace('|', '/').replace(' ', '_')
-    else:
-        return name.replace(' ', '_')
+    return name.replace(' ', '_')

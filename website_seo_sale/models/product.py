@@ -18,7 +18,6 @@ class product_template(osv.Model):
 class product_product(osv.Model):
     _inherit = "product.product"
 
-    # Wrappers for call_kw with inherits
     def open_website_url(self, cr, uid, ids, context=None):
         template_id = self.browse(cr, uid, ids, context=context).product_tmpl_id.id
         return self.pool['product.template'].open_website_url(cr, uid, [template_id], context=context)
@@ -31,16 +30,12 @@ class product_product(osv.Model):
         template_id = self.browse(cr, uid, ids, context=context).product_tmpl_id.id
         return self.pool['product.template'].website_publish_button(cr, uid, [template_id], context=context)
 
+
 class product_public_category(osv.osv):
     _inherit = ["product.public.category"]
 
     def name_get(self, cr, uid, ids, context=None):
         res = []
         for cat in self.browse(cr, uid, ids, context=context):
-            names = [cat.name]
-            pcat = cat.parent_id
-            while pcat:
-                names.append(pcat.name)
-                pcat = pcat.parent_id
-            res.append((cat.id, '|'.join(reversed(names))))
+            res.append((cat.id, cat.name))
         return res

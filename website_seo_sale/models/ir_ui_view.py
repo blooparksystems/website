@@ -21,7 +21,6 @@
 import urlparse
 from openerp import api, fields, models
 from openerp.addons.website_seo_sale.models.website import slug
-from openerp.http import request
 
 
 class View(models.Model):

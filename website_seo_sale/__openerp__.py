@@ -13,7 +13,6 @@ OpenERP E-Commerce SEO Optimized
     'depends': [ 'website_sale',],
     'data': [
         'views/templates.xml',
-        #'views/views.xml',
     ],
     'demo': [
     ],
