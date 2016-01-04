@@ -3,7 +3,7 @@ import werkzeug
 from openerp import http
 from openerp.http import request
 from openerp.addons.website_sale.controllers.main import website_sale, PPG, PPR, QueryURL, table_compute
-from openerp.addons.website_seo_sale.models.website import slug
+from openerp.addons.website_seo_sale.models.product import slug
 
 
 class website_seo_sale(website_sale):

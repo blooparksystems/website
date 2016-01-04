@@ -18,9 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import urlparse
-from openerp import api, fields, models
-from openerp.addons.website_seo_sale.models.website import slug
+from openerp import api, models
+from product import slug
 
 
 class View(models.Model):
@@ -32,8 +31,7 @@ class View(models.Model):
 
 
     @api.cr_uid_ids_context
-    def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb',
-               context=None):
+    def render(self, cr, uid, id_or_xml_id, values=None, engine='ir.qweb', context=None):
         """Add additional helper variables.
 
         Add slug function with additional seo url handling and the query string
@@ -43,7 +41,7 @@ class View(models.Model):
             values = {}
 
         values.update({
-            'slug': slug,
+            'slaag': slug,
         })
 
         return super(View, self).render(cr, uid, id_or_xml_id, values=values,

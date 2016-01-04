@@ -1,8 +1,9 @@
 from openerp.osv import orm
 from openerp.addons.website.models.ir_http import ModelConverter, RequestUID
-from openerp.addons.website_seo_sale.models.website import slug, _UNSLUG_RE
+from product import slug, _UNSLUG_RE
 from openerp.http import request
 import re
+
 
 class IrHttp(orm.TransientModel):
     _inherit = 'ir.http'

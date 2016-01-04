@@ -10,13 +10,10 @@ OpenERP E-Commerce SEO Optimized
 ==================
 
         """,
-    'depends': [ 'website_sale',],
+    'depends': ['website_seo', 'website_sale',],
     'data': [
         'views/templates.xml',
     ],
-    'demo': [
-    ],
-    'qweb': ['static/src/xml/*.xml'],
     'installable': True,
     'application': False,
 }
