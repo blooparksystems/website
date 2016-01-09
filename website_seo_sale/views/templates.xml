@@ -157,5 +157,19 @@
         </template>
         -->
 
+        <template id="content_new_product" inherit_id="website_sale.content_new_product" groups="base.group_sale_manager">
+            <xpath expr="//a[@id='create-new-product']" position="replace">
+                <a id="create-new-product" href="#" data-action="new_product">New Product</a>
+            </xpath>
+        </template>
+
+        <template id="cart_lines" name="Shopping Cart" inherit_id="website_sale.cart_lines">
+            <xpath expr="//a[@t-attf-href='/shop/product/#{ slug(line.product_id.product_tmpl_id) }']" position="replace">
+                <a t-attf-href="/#{ slaag(line.product_id.product_tmpl_id) }">
+                  <strong t-esc="line.product_id.with_context(display_default_code=False).display_name"/>
+                </a>
+            </xpath>
+        </template>
+
     </data>
 </openerp>

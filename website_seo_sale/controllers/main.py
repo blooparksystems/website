@@ -4,6 +4,7 @@ from openerp import http
 from openerp.http import request
 from openerp.addons.website_sale.controllers.main import website_sale, PPG, PPR, QueryURL, table_compute
 from openerp.addons.website_seo_sale.models.product import slug
+from openerp.tools.translate import _
 
 
 class website_seo_sale(website_sale):
@@ -177,3 +178,14 @@ class website_seo_sale(website_sale):
             'rating_product' : rating_product
         }
         return request.website.render("website_sale.product", values)
+
+    @http.route(['/shop/add_product'], type='http', auth="user", methods=['POST'], website=True)
+    def add_product(self, name=None, category=0, **post):
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        if not name:
+            name = _("New Product")
+        product_obj = request.registry.get('product.product')
+        product_id = product_obj.create(cr, uid, { 'name': name, 'public_categ_ids': category }, context=context)
+        product = product_obj.browse(cr, uid, product_id, context=context)
+
+        return request.redirect("/%s?enable_editor=1" % slug(product.product_tmpl_id))
