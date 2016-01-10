@@ -18,4 +18,4 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import website_seo_sale.tests.test_website_seo_sale
+from . import test_website_seo_sale

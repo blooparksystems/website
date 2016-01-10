@@ -18,5 +18,5 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import website_seo_sale.controllers
-import website_seo_sale.models
+from . import controllers
+from . import models

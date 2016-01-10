@@ -19,7 +19,7 @@
 #
 ##############################################################################
 from openerp import api, models
-from website_seo_sale.models.product import slug
+from product import slug
 
 
 class View(models.Model):

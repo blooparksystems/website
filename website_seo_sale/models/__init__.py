@@ -18,6 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import website_seo_sale.models.ir_http
-import website_seo_sale.models.ir_ui_view
-import website_seo_sale.models.product
+from . import ir_http
+from . import ir_ui_view
+from . import product
