@@ -20,7 +20,7 @@
 ##############################################################################
 from openerp.osv import orm
 from openerp.addons.website.models.ir_http import ModelConverter, RequestUID
-from product import slug, _UNSLUG_RE
+from openerp.addons.website_seo_sale.models.product import slug, _UNSLUG_RE
 from openerp.http import request
 import re
 
