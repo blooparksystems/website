@@ -36,7 +36,7 @@ def slug(value):
     return name.replace(' ', '_')
 
 
-class product_template(osv.Model):
+class ProductTemplate(osv.Model):
     _inherit = ["product.template", "website.seo.metadata", 'website.published.mixin', 'rating.mixin']
     _order = 'website_published desc, website_sequence desc, name'
     _name = 'product.template'
@@ -49,7 +49,7 @@ class product_template(osv.Model):
         return res
 
 
-class product_product(osv.Model):
+class ProductProduct(osv.Model):
     _inherit = "product.product"
 
     def open_website_url(self, cr, uid, ids, context=None):
@@ -72,7 +72,7 @@ class product_product(osv.Model):
         return True
 
 
-class product_public_category(osv.osv):
+class ProductPublicCategory(osv.osv):
     _inherit = ["product.public.category"]
 
     def name_get(self, cr, uid, ids, context=None):
