@@ -195,6 +195,13 @@ class BlogTag(models.Model):
         cfg = self.env['website.config.settings'].search([])
         return cfg and cfg[0].website_blog_tag_default_meta_robots or False
 
+    @api.model
+    def add_seo_url(self):
+        for tag in self.env['blog.tag'].search([('seo_url', '=', False)]):
+            tag.write({'seo_url': slug(tag)})
+
+        return True
+
 
 class Website(models.Model):
     _inherit = 'website'
