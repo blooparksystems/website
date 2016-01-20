@@ -6,15 +6,17 @@ Provide a different way to save changes in Qweb views
 
 Why is useful to save small changes of the view instead of a copy of the view updated?
 
-- (?) Handle XML views in modules and manually updates in a website. Currently once you touch a view it can be update by
+- Handle XML views in modules and manually updates in a website. Currently once you touch a view it can be update by
 a module upgrade.
-- (?) Go back some changes, use UNDO like in a normal text editor.
+
+- Go back some changes, use UNDO like in a normal text editor.
+
 - ...
 
 Features
 --------
 
-To get the main feature of this module working fine we need to consider two important moments:
+For the main feature of this module we need to consider two important moments:
 
 1. Save an updated view.
 2. Render a view taking into account the changes saved.
