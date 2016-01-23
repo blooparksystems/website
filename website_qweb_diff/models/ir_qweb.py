@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from lxml import html
-from diff_match_patch import diff_match_patch
 from openerp import models, api
+from openerp.addons.website_qweb_diff.tools import arch
 
 
 class QWeb(models.AbstractModel):
@@ -14,33 +14,32 @@ class QWeb(models.AbstractModel):
                                        loader=loader)
         parser = html.HTMLParser(encoding='utf-8')
         try:
-            arch = html.fromstring(res, parser=parser)
+            arch_master = html.fromstring(res, parser=parser)
         except Exception:
             return res
 
         update = False
-        diff = diff_match_patch()
         view = self.get_page_view_id(id_or_xml_id)
         domain = [('view', '=', view.id)]
         for section in self.env['ir.ui.view.diff'].search(domain):
             xpath = '//%s' % '/'.join([x for x in section.name.split('/')
                                        if not x.startswith('t')])
-            arch_section = arch.xpath(xpath)
+            arch_section = arch_master.xpath(xpath)
             if not arch_section:
                 continue
             element = arch_section[0]
             update = True
 
-            patches = diff.patch_fromText(section.diff)
-            element_content = html.tostring(element, encoding='utf-8')
-            section_content = diff.patch_apply(patches,
-                                               unicode(element_content,
-                                                       'utf-8'))[0]
-            section_element = html.fromstring(section_content, parser=parser)
+            patches = arch.get_patch_from_text(section.diff)
+            dict_content = arch.get_html_parts(element)
+            element_content = unicode(dict_content['content'], 'utf-8')
+            section_content = arch.set_patch(patches, element_content)
+            section_full = dict_content['start'] + section_content + dict_content['end']
+            section_element = html.fromstring(section_full, parser=parser)
             element.getparent().replace(element, section_element)
 
         if update:
-            res = html.tostring(arch, method='html', encoding='utf8',
+            res = html.tostring(arch_master, method='html', encoding='utf8',
                                 doctype='<!DOCTYPE html>')
         return res
 

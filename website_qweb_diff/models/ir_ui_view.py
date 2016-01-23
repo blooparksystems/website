@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from lxml import html
 from datetime import datetime
-from diff_match_patch import diff_match_patch
-from openerp import api, fields
-from openerp.models import Model
+from openerp import models, fields, api
+from openerp.addons.website_qweb_diff.tools import arch
 
 
-class IrUiView(Model):
+class IrUiView(models.Model):
     _inherit = "ir.ui.view"
 
     diffs = fields.One2many('ir.ui.view.diff', 'view', 'Diffs')
@@ -20,17 +19,16 @@ class IrUiView(Model):
             return super(IrUiView, self).save(value, xpath=xpath)
 
         parser = html.HTMLParser(encoding='utf-8')
-        arch_master = self.get_arch_master(self.arch, parser, xpath)
+        arch_master = arch.get_html_arch(self.arch, parser, xpath)
         arch_section = html.fromstring(value, parser=parser)
 
         if arch_master is not False and \
                 self.section_changed(arch_master, arch_section):
             diff_model = self.env['ir.ui.view.diff']
-            content_master = html.tostring(arch_master, encoding='utf-8')
-            content_section = html.tostring(arch_section, encoding='utf-8')
-            patch_content = self.get_patch(content_master, content_section)
-            # TODO: do not save attributes from element tag that belongs to
-            # website edition, maybe with a method clear_from_edition
+            content_master = arch.get_html_parts(arch_master)['content']
+            content_section = arch.get_html_parts(arch_section)['content']
+            patch_content = arch.get_html_patch(content_master,
+                                                content_section)
             values = {
                 'diff': patch_content,
                 'datetime': datetime.now()
@@ -48,31 +46,15 @@ class IrUiView(Model):
                 diff_model.create(values)
 
     @api.model
-    def get_arch_master(self, value, parser, xpath):
-        arch = html.fromstring(value, parser=parser)
-        if arch:
-            arch = arch.xpath('/%s' % xpath)
-        if arch:
-            return arch[0]
-        return False
-
-    @api.model
     def section_changed(self, arch_master, arch_section):
         if arch_section.get('data-note-id', ''):
             return True
-        elif arch_master:
+        elif arch_master is not False:
             master_len = len(arch_master.getchildren())
             section_len = len(arch_section.getchildren())
             if master_len != section_len:
                 return True
         return False
-
-    @api.model
-    def get_patch(self, master_arch, section_arch):
-        diff = diff_match_patch()
-        patches = diff.patch_make(unicode(master_arch, 'utf-8'),
-                                  unicode(section_arch, 'utf-8'))
-        return diff.patch_toText(patches)
 
     @api.one
     def reset_all_changes(self, hard=False):
@@ -91,7 +73,7 @@ class IrUiView(Model):
                 self.diffs[0].write({'active': False})
 
 
-class IrUiViewDiff(Model):
+class IrUiViewDiff(models.Model):
     _name = 'ir.ui.view.diff'
     _order = 'datetime desc'
 
