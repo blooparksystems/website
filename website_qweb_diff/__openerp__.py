@@ -26,7 +26,7 @@
     'author': "bloopark systems GmbH & Co. KG ,",
     'website': "http://www.bloopark.de",
     'depends': ['website'],
-    'data': [ ],
+    'data': ['security/ir.model.access.csv'],
     'installable': True,
     'auto_install': False,
 }

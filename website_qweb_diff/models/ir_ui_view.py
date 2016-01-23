@@ -1,26 +1,8 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-# Odoo, an open source suite of business apps
-# This module copyright (C) 2015 bloopark systems (<http://bloopark.de>).
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
 from lxml import html
+from datetime import datetime
 from diff_match_patch import diff_match_patch
-from openerp import api, fields, SUPERUSER_ID
+from openerp import api, fields
 from openerp.models import Model
 
 
@@ -34,51 +16,62 @@ class IrUiView(Model):
         if self.env.context is None:
             self.env.context = {}
 
+        if not xpath:
+            return super(IrUiView, self).save(value, xpath=xpath)
+
         parser = html.HTMLParser(encoding='utf-8')
-
+        arch_master = self.get_arch_master(self.arch, parser, xpath)
         arch_section = html.fromstring(value, parser=parser)
-        # TODO: the 9.0 version doesn't use id, I think it use an attribute data-note-id
-        section_id = arch_section.get('id', '')
-        if section_id.startswith('note-editor'):
+
+        if arch_master is not False and \
+                self.section_changed(arch_master, arch_section):
             diff_model = self.env['ir.ui.view.diff']
-            arch_master = self.get_master_view_part(xpath)[0]
-
-            arch_list = []
-            # TODO: cover case when adding a new section from blocks
-            children = zip(arch_master.getchildren(), arch_section.getchildren())
-            for child_master, child_version in children:
-                child_master = html.tostring(child_master, encoding='utf-8')
-                child_version = html.tostring(child_version, encoding='utf-8')
-                if child_master and child_version:
-                    arch_list.append(self.get_patch(child_master, child_version))
-                else:
-                    arch_list.append(child_version)
-            patch_text = self.get_patch(arch_master.text, arch_section.text)
-            diff = '%s|T|%s' % (patch_text, '|E|'.join(arch_list))
-            vals = {'diff': diff}
-            part_view = diff_model.search(('view', '=', self.id),
-                                          ('name', '=', xpath))
-            if part_view:
-                part_view.write(vals)
+            content_master = html.tostring(arch_master, encoding='utf-8')
+            content_section = html.tostring(arch_section, encoding='utf-8')
+            patch_content = self.get_patch(content_master, content_section)
+            # TODO: do not save attributes from element tag that belongs to
+            # website edition, maybe with a method clear_from_edition
+            values = {
+                'diff': patch_content,
+                'datetime': datetime.now()
+            }
+            domain = [
+                ('view', '=', self.id),
+                ('name', '=', xpath),
+                ('element', '=', arch_section.tag)
+            ]
+            diff = diff_model.search(domain)
+            if diff:
+                diff.write(values)
             else:
-                vals.update({
-                    'name': xpath,
-                    'element': arch_section.tag,
-                    'view': self.id,
-                })
-                diff_model.create(vals)
-
-    @api.one
-    def get_master_view_part(self, xpath):
-        arch = html.fromstring(self.arch, parser=html.HTMLParser(encoding='utf-8'))
-        arch_section = arch.xpath('/' + xpath)
-        return arch_section and arch_section[0] or False
+                values.update({x[0]: x[2] for x in domain})
+                diff_model.create(values)
 
     @api.model
-    def get_patch(self, master_arch, version_arch):
+    def get_arch_master(self, value, parser, xpath):
+        arch = html.fromstring(value, parser=parser)
+        if arch:
+            arch = arch.xpath('/%s' % xpath)
+        if arch:
+            return arch[0]
+        return False
+
+    @api.model
+    def section_changed(self, arch_master, arch_section):
+        if arch_section.get('data-note-id', ''):
+            return True
+        elif arch_master:
+            master_len = len(arch_master.getchildren())
+            section_len = len(arch_section.getchildren())
+            if master_len != section_len:
+                return True
+        return False
+
+    @api.model
+    def get_patch(self, master_arch, section_arch):
         diff = diff_match_patch()
         patches = diff.patch_make(unicode(master_arch, 'utf-8'),
-                                  unicode(version_arch, 'utf-8'))
+                                  unicode(section_arch, 'utf-8'))
         return diff.patch_toText(patches)
 
     @api.one
