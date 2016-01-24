@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+
+    <template id="assets_editor" inherit_id="website.assets_editor" name="Editor assets">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/website_page_undo/static/src/js/website.contentUndo.js"></script>
+        </xpath>
+    </template>
+
+    <template id="undo_page_content_menu" inherit_id="website.user_navbar" groups="base.group_user">
+        <xpath expr="//ul[@class='dropdown-menu oe_content_menu']/li[@class='divider']" position="after">
+            <li groups="base.group_website_designer"><a href="#" data-action="undo_change">Undo Change</a></li>
+            <li groups="base.group_website_designer"><a href="#" data-action="reset_changes">Reset Changes</a></li>
+        </xpath>
+    </template>
+
+</data>
+</openerp>
