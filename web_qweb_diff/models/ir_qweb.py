@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from lxml import html
 from openerp import models, api
-from openerp.addons.website_qweb_diff.tools import arch
+from openerp.addons.web_qweb_diff.tools import arch
 
 
 class QWeb(models.AbstractModel):
@@ -19,11 +19,13 @@ class QWeb(models.AbstractModel):
             return res
 
         update = False
-        view = self.get_page_view_id(id_or_xml_id)
-        domain = [('view', '=', view.id)]
+        view_ids = self.get_page_view_ids(id_or_xml_id)
+        domain = [('view', 'in', view_ids)]
         for section in self.env['ir.ui.view.diff'].search(domain):
             xpath = '//%s' % '/'.join([x for x in section.name.split('/')
-                                       if not x.startswith('t')])
+                                       if not x.startswith('t')
+                                       and not x.startswith('data')
+                                       and not x.startswith('xpath')])
             arch_section = arch_master.xpath(xpath)
             if not arch_section:
                 continue
@@ -44,8 +46,7 @@ class QWeb(models.AbstractModel):
         return res
 
     @api.model
-    def get_page_view_id(self, id_or_xml_id):
-        view = False
+    def get_page_view_ids(self, id_or_xml_id):
         model = self.env['ir.ui.view']
 
         if isinstance(id_or_xml_id, (int, long)):
@@ -57,11 +58,6 @@ class QWeb(models.AbstractModel):
                 view = self.env.ref(id_or_xml_id)
 
         # Look for an inherited view
-        views = model.search([('key', '=', view.key)])
-        website = self.env['website'].get_current_website()
-        for v in views:
-            if v.website_id.id == website.id:
-                view = v
-                break
-
-        return view
+        views = model.search(['|', ('key', '=', view.key),
+                              ('inherit_id', '=', view.id)])
+        return [x.id for x in views]

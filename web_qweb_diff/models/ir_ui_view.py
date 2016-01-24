@@ -2,7 +2,7 @@
 from lxml import html
 from datetime import datetime
 from openerp import models, fields, api
-from openerp.addons.website_qweb_diff.tools import arch
+from openerp.addons.web_qweb_diff.tools import arch
 
 
 class IrUiView(models.Model):

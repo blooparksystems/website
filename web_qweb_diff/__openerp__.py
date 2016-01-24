@@ -19,14 +19,17 @@
 #
 ##############################################################################
 {
-    'name': 'Website Qweb Diff',
-    'category': 'Website',
-    'summary': 'Website Qweb Diff',
+    'name': 'Web Qweb Diff',
+    'category': 'Web',
+    'summary': 'Web Qweb Diff',
     'version': '1.0',
     'author': "bloopark systems GmbH & Co. KG ,",
     'website': "http://www.bloopark.de",
-    'depends': ['website'],
-    'data': ['security/ir.model.access.csv'],
+    'depends': ['web_editor'],
+    'data': [
+        'views/ir_ui_view.xml',
+        'security/ir.model.access.csv'
+    ],
     'installable': True,
     'auto_install': False,
 }
