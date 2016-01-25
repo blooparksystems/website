@@ -12,6 +12,7 @@
         <xpath expr="//ul[@class='dropdown-menu oe_content_menu']/li[@class='divider']" position="after">
             <li groups="base.group_website_designer"><a href="#" data-action="undo_change">Undo Change</a></li>
             <li groups="base.group_website_designer"><a href="#" data-action="reset_changes">Reset Changes</a></li>
+            <li class="divider" groups="base.group_website_designer"> </li>
         </xpath>
     </template>
 
