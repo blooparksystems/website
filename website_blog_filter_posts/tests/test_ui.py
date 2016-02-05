@@ -18,23 +18,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Website SEO',
-    'category': 'Website',
-    'summary': 'Provide the base for an improved SEO handling',
-    'version': '1.0',
-    'author': "bloopark systems GmbH & Co. KG ,"
-              "Odoo Community Association (OCA)",
-    'website': "http://www.bloopark.de",
-    'depends': ['website'],
-    'data': [
-        'data/website_seo_data.xml',
-        'views/header.xml',
-        'views/ir_ui_view.xml',
-        'views/res_lang.xml',
-        'views/res_config.xml',
-        'views/website_templates.xml'
-    ],
-    'installable': True,
-    'auto_install': False,
-}
+import openerp.tests
+
+
+@openerp.tests.common.at_install(False)
+@openerp.tests.common.post_install(True)
+class TestUi(openerp.tests.HttpCase):
+    def test_01_admin_blog_filters(self):
+        self.phantom_js("/",
+                        "odoo.__DEBUG__.services['web.Tour'].run('blog_filters', 'test')",
+                        "odoo.__DEBUG__.services['web.Tour'].tours.blog_filters",
+                        login='admin')

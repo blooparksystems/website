@@ -18,23 +18,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Website SEO',
-    'category': 'Website',
-    'summary': 'Provide the base for an improved SEO handling',
-    'version': '1.0',
-    'author': "bloopark systems GmbH & Co. KG ,"
-              "Odoo Community Association (OCA)",
-    'website': "http://www.bloopark.de",
-    'depends': ['website'],
-    'data': [
-        'data/website_seo_data.xml',
-        'views/header.xml',
-        'views/ir_ui_view.xml',
-        'views/res_lang.xml',
-        'views/res_config.xml',
-        'views/website_templates.xml'
-    ],
-    'installable': True,
-    'auto_install': False,
-}
+from openerp.addons.website_blog.tests.common import TestWebsiteBlogCommon
+
+
+class TestWebsiteBlogFilterPosts(TestWebsiteBlogCommon):
+
+    def setUp(self):
+        super(TestWebsiteBlogFilterPosts, self).setUp()
+        self.blog_blog_obj = self.env['blog.blog']
+        self.blog_post_obj = self.env['blog.post']
+        # create a new blog
+        self.test_blog = self.blog_blog_obj.sudo(self.user_blogmanager.create({
+            'name': 'New Test Blog',
+            'description': 'This is a test blog.'
+        }))
+
+        self.test_blog_post_1 = self.blog_post_obj.sudo(selg.user_blogmanager.create({
+            'name': 'Blog Post 1',
+            'blog_id': self.test_blog.id
+        }))

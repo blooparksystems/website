@@ -19,22 +19,20 @@
 #
 ##############################################################################
 {
-    'name': 'Website SEO',
+    'name': 'Filter Blog Posts',
+    'summary': 'Add some filters in blog.',
     'category': 'Website',
-    'summary': 'Provide the base for an improved SEO handling',
-    'version': '1.0',
-    'author': "bloopark systems GmbH & Co. KG ,"
-              "Odoo Community Association (OCA)",
+    "license": "AGPL-3",
+    'author': "bloopark systems GmbH & Co. KG, Odoo Community Association (OCA)",
     'website': "http://www.bloopark.de",
-    'depends': ['website'],
+
+    'version': '9.0.1.0.0',
+
     'data': [
-        'data/website_seo_data.xml',
-        'views/header.xml',
-        'views/ir_ui_view.xml',
-        'views/res_lang.xml',
-        'views/res_config.xml',
-        'views/website_templates.xml'
+        'views/assets.xml',
+        'views/templates.xml'
     ],
-    'installable': True,
-    'auto_install': False,
+    'depends': [
+        'website_blog',
+    ],
 }

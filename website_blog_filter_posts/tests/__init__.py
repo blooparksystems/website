@@ -18,23 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-{
-    'name': 'Website SEO',
-    'category': 'Website',
-    'summary': 'Provide the base for an improved SEO handling',
-    'version': '1.0',
-    'author': "bloopark systems GmbH & Co. KG ,"
-              "Odoo Community Association (OCA)",
-    'website': "http://www.bloopark.de",
-    'depends': ['website'],
-    'data': [
-        'data/website_seo_data.xml',
-        'views/header.xml',
-        'views/ir_ui_view.xml',
-        'views/res_lang.xml',
-        'views/res_config.xml',
-        'views/website_templates.xml'
-    ],
-    'installable': True,
-    'auto_install': False,
-}
+
+from . import test_ui
+from . import test_website_blog_filter_posts
