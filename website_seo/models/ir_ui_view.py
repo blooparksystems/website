@@ -149,7 +149,7 @@ class View(models.Model):
 
     @api.model
     def find_by_seo_path(self, path):
-        url_parts = path.split('/')
+        url_parts = [u for u in path.split('/') if u != '']
         views = self.search([('seo_url', 'in', url_parts)],
                             order='seo_url_level ASC')
         if len(url_parts) == len(views):
