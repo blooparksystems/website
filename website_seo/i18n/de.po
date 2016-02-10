@@ -184,3 +184,19 @@ msgstr "Invalid SEO URL. The allowed characters are a-z, A-Z, 0-9, - and _."
 #, python-format
 msgid "The SEO URL '%s' is already taken in the application."
 msgstr "The SEO URL '%s' is already taken in the application."
+
+#. module: website_seo
+#: model:ir.ui.view,arch_db:website_seo.view_website_config_settings
+msgid "SEO Redirects"
+msgstr "SEO Umleitungen"
+
+#. module: website_seo
+#: model:ir.ui.view,arch_db:website_seo.view_website_config_settings
+msgid "Configure SEO redirects"
+msgstr "Konfiguriere SEO Umleitungen"
+
+#. module: website_seo
+#: model:ir.actions.act_window,name:website_seo.action_website_seo_pages
+#: model:ir.ui.view,arch_db:website_seo.website_seo_pages_tree
+msgid "Website SEO Redirects"
+msgstr "Webseite SEO Umleitungen"
