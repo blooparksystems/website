@@ -505,7 +505,7 @@ odoo.define('website_seo.seo_robots', function (require) {
                 var seo_url_regex = /^([.a-zA-Z0-9-_]+)$/;
                 var seo_url = this.$('input[name=seo_url]').val(); //self.htmlPage.seo_url();
 
-                if (!error && !seo_url.match(seo_url_regex)) {
+                if (seo_url && !error && !seo_url.match(seo_url_regex)) {
                     error = _t("Invalid SEO URL. The allowed characters are a-z, A-Z, 0-9, - and _.");
                 }
                 if (!error && self.known_urls.indexOf(seo_url) >= 0) {
