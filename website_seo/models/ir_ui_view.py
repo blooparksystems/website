@@ -32,6 +32,7 @@ def url_for(path_or_uri, lang=None):
     if isinstance(current_path, unicode):
         current_path = current_path.encode('utf-8')
     location = path_or_uri.strip()
+
     force_lang = lang is not None
     url = urlparse.urlparse(location)
 
@@ -40,6 +41,12 @@ def url_for(path_or_uri, lang=None):
 
         lang = lang or request.context.get('lang')
         langs = [lg[0] for lg in request.website.get_languages()]
+
+        #--------------------------------------------------
+        translation = _get_translated_seo_url(location, lang)
+        if translation:
+            location = translation
+        #--------------------------------------------------
 
         if (len(langs) > 1 or force_lang) and is_multilang_url(location, langs):
             if lang != request.context.get('lang'):
@@ -60,13 +67,49 @@ def url_for(path_or_uri, lang=None):
     return location.decode('utf-8')
 
 
-def url_for_lang(location, lang):
-    menu = request.registry['website.menu']
+def _get_translation_value(location):
     ctx = request.context.copy()
-    menu_ids = menu.search(request.cr, request.uid, [('url', '=', location)], context=ctx)
-    if menu_ids:
-        ctx.update({'lang': lang})
-        location = menu.browse(request.cr, request.uid, menu_ids[0], context=ctx).url
+
+    trans = request.registry['ir.translation']
+    view = request.registry['ir.ui.view']
+
+    view_ids = view.search(request.cr, request.uid, [('seo_url', '=', location[1:])], context=ctx)
+    if view_ids:
+        trans_ids = trans.search(request.cr, request.uid, [('name','=', "ir.ui.view,seo_url"), ('res_id', '=', view_ids[0])], context=ctx)
+        value = trans.browse(request.cr, request.uid, trans_ids, context=ctx)[0].value
+        return "/"+value
+    else:
+        return location
+
+
+def _get_translated_seo_url(location, lang):
+    if len(location) > 1:
+        ctx = request.context.copy()
+
+        trans = request.registry['ir.translation']
+        view = request.registry['ir.ui.view']
+
+        trans_ids = trans.search(request.cr, request.uid, [('value', '=', location[1:])], context=ctx)
+        if trans_ids:
+            # print location, trans_ids
+            ctx.update({'lang': lang})
+            res_id = trans.browse(request.cr, request.uid, trans_ids[0], context=ctx)[0].res_id
+            seo_url = view.browse(request.cr, request.uid, [res_id], context=ctx)[0].seo_url
+            # print lang, seo_url
+            return "/"+seo_url
+        else:
+            return None
+    else:
+        return location
+
+
+def url_for_lang(location, lang):
+    seo_url = _get_translated_seo_url(location, lang)
+    if seo_url:
+        return seo_url
+    else:
+        return _get_translation_value(location)
+
     return location
 
 
