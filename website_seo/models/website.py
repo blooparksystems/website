@@ -142,7 +142,7 @@ class WebsiteMenu(models.Model):
                     xml_id = 'website.%s' % xml_id
                 view = self.env['ir.ui.view'].search([('key', '=', xml_id)])
                 view = view and view[0] or False
-            if not view:
+            if view:
                 xml_id = 'website.%s' % slugify(self.name)
                 view = self.env['ir.ui.view'].search([('key', '=', xml_id)])
                 view = view and view[0] or False
