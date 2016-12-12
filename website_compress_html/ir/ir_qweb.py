@@ -135,3 +135,6 @@ class QWeb(ir_qweb.QWeb):
 
     def render_text(self, text, element, qwebcontext):
         return text.encode('utf-8')
+
+    def render_tail(self, text, element, qwebcontext):
+        return text.encode('utf-8')
