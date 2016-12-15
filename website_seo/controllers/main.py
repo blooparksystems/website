@@ -18,6 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
+import json
+import xml.etree.ElementTree as ET
+
+import urllib2
+import werkzeug.utils
+
 from openerp.addons.web import http
 from openerp.addons.web.http import request
 from openerp.addons.website.controllers.main import Website
@@ -77,3 +84,18 @@ class Website(Website):
         except:
             pass
         return super(Website, self).page(page, **opt)
+
+    @http.route()
+    def seo_suggest(self, keywords=None, lang=None):
+        language = lang.split("_")
+        url = "http://google.com/complete/search"
+        try:
+            req = urllib2.Request("%s?%s" % (url, werkzeug.url_encode({
+                'ie': 'utf8', 'oe': 'utf8', 'output': 'toolbar',
+                'q': keywords, 'hl': language[0], 'gl': language[1]
+            })))
+            request = urllib2.urlopen(req)
+        except (urllib2.HTTPError, urllib2.URLError):
+            return []
+        xmlroot = ET.fromstring(request.read())
+        return json.dumps([sugg[0].attrib['data'] for sugg in xmlroot if len(sugg) and sugg[0].attrib['data']])
