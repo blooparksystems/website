@@ -83,6 +83,28 @@
             self.disableUnsavableFields();
             self.renderPreview();
             $modal.modal();
+            self.getLanguages();
+        },
+        getLanguages: function(){
+            var self = this;
+            openerp.jsonRpc('/web/dataset/call_kw', 'call', {
+                model: 'website',
+                method: 'get_languages',
+                args: [],
+                kwargs: {
+                    ids: [website.get_context().website_id],
+                    context: website.get_context()
+                }
+            }).then( function(data) {
+                self.$('#language-box').html(openerp.qweb.render('Configurator.language_promote', {
+                    'language': data,
+                    'def_lang': website.get_context().lang
+                }));
+                self.$('#seo-language-box').html(openerp.qweb.render('Configurator.language_promote', {
+                    'language': data,
+                    'def_lang': website.get_context().lang
+                }));
+            });
         },
         disableUnsavableFields: function () {
             var self = this;
