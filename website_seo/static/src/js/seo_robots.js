@@ -1,7 +1,7 @@
 // Override necessary parts of website/static/src/js/website.seo.js to enable
 // META robots management via promote panel.
 //
-// We need to override all needed function. We don't can use the super function
+// We need to override all needed function. We can't use the super function
 // here.
 
 (function () {
