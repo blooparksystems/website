@@ -272,6 +272,23 @@ class WebsiteSeoMetadata(models.Model):
         return obj and obj[0].information or False
 
 
+class WebsiteSeoRedirect(models.Model):
+    """Class used to store old urls for each resource. With these urls the
+       website can do redirect 301 if some url has changed.
+
+       The field 'resource' can't be a strong reference because
+       the model website.seo.metadata is used to inherit and the fields
+       actually are in the resources (eg. ir.ui.view, blog.blog).
+    """
+
+    _name = 'website.seo.redirect'
+
+    url = fields.Char(string='URL')
+    lang = fields.Char(string='Lang')
+    resource = fields.Char(string='Resource', help='This field use the format model,id')
+
+
+
 class WebsiteSeoInformation(models.Model):
     _name = 'website.seo.information'
 
