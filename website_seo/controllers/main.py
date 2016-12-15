@@ -87,15 +87,24 @@ class Website(Website):
 
     @http.route()
     def seo_suggest(self, keywords=None, lang=None):
-        language = lang.split("_")
         url = "http://google.com/complete/search"
         try:
-            req = urllib2.Request("%s?%s" % (url, werkzeug.url_encode({
-                'ie': 'utf8', 'oe': 'utf8', 'output': 'toolbar',
-                'q': keywords, 'hl': language[0], 'gl': language[1]
-            })))
+            params = {
+                'ie': 'utf8',
+                'oe': 'utf8',
+                'output': 'toolbar',
+                'q': keywords,
+            }
+            if lang:
+                language = lang.split("_")
+                params.update({
+                    'hl': language[0],
+                    'gl': language[1]
+                })
+            req = urllib2.Request("%s?%s" % (url, werkzeug.url_encode(params)))
             request = urllib2.urlopen(req)
         except (urllib2.HTTPError, urllib2.URLError):
+            # TODO: shouldn't this return {} ?
             return []
         xmlroot = ET.fromstring(request.read())
         return json.dumps([sugg[0].attrib['data'] for sugg in xmlroot if len(sugg) and sugg[0].attrib['data']])
