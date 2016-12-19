@@ -213,10 +213,16 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
-    seo_url_redirect = fields.Char(string='SEO Url Redirect', translate=True)
+    seo_url_redirect = fields.One2many(compute='_get_seo_url_redirect',
+                                       comodel_name='website.seo.redirect',
+                                       string='SEO Url Redirect', translate=True)
     website_meta_robots = fields.Selection(META_ROBOTS,
                                            string='Website meta robots',
                                            translate=True)
+
+    def _get_seo_url_redirect(self):
+        resource = '%s,%s' % (self.name, str(self.id))
+        return self.env['website.seo.redirect'].search([('resource', '=', resource)])
 
     @api.model
     def create(self, vals):
@@ -238,16 +244,29 @@ class WebsiteSeoMetadata(models.Model):
         """
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
+        if vals.get('seo_url', False) or vals.get('seo_url_parent', False):
             for obj in self:
-                if obj.seo_url:
-                    seo_url = obj.get_seo_path()[0]
-                    if obj.seo_url_redirect:
-                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, seo_url)
-                    else:
-                        vals['seo_url_redirect'] = seo_url
+                obj.update_seo_redirect()
                 super(WebsiteSeoMetadata, obj).write(vals)
             return True
         return super(WebsiteSeoMetadata, self).write(vals)
+
+    def update_seo_redirect(self):
+        # TODO: includes the case when the seo_url is added for first time
+        # and the url '/page/...' must be saved to redirect
+        if self.seo_url:
+            seo_url = self.get_seo_path()[0]
+            if seo_url not in [x.url for x in self.seo_url_redirect]:
+                lang = self.env.context.get('lang', False)
+                if not lang:
+                    lang = self.env['website'].get_current_website().default_lang_code
+                lang = self.env['res.lang'].get_code_from_alias(lang)
+                redirect = {
+                    'url': seo_url,
+                    'lang': lang,
+                    'resource': '%s,%s' % (self._name, self.id)
+                }
+                self.env['website.seo.redirect'].create(redirect)
 
     def validate_seo_url(self, seo_url):
         """Validate a manual entered SEO url."""
