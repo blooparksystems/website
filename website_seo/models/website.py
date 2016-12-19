@@ -36,6 +36,8 @@ META_ROBOTS = [
     ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
 ]
 
+KNOWN_URLS =[]
+
 
 def slug(value):
     """Add seo url check in slug handling."""
@@ -289,6 +291,20 @@ class WebsiteSeoMetadata(models.Model):
         domain = [('field', '=', field)]
         obj = self.env['website.seo.information'].search(domain)
         return obj and obj[0].information or False
+
+    def _check_known_urls(self, cr, uid, ids, context=None):
+        for seo in self.browse(cr, uid, ids, context=context):
+            if seo.seo_url in KNOWN_URLS:
+                return False
+        return True
+
+    _constraints = [
+        (_check_known_urls, "The URL already exists in Odoo.", ['seo_url']),
+    ]
+
+    @api.model
+    def get_known_seo_urls(self):
+        return KNOWN_URLS
 
 
 class WebsiteSeoRedirect(models.Model):

@@ -8,6 +8,8 @@
     'use strict';
 
     var website = openerp.website;
+    var _t = openerp._t;
+
     website.add_template_file('/website_seo/static/src/xml/website_seo_robots.xml');
 
     website.seo.HtmlPage.include({
@@ -61,7 +63,12 @@
                 $('input[name=seo_url]').css('visibility','hidden');
                 $('label[for=seo_url]').css('visibility','hidden');
             }
-
+            self.known_urls = [];
+            website.session.model('website.seo.metadata')
+                .call('get_known_seo_urls')
+                .then(function(data) {
+                    self.known_urls = data;
+                });
             self.keywordList = new website.seo.KeywordList(self, { page: htmlPage });
             self.keywordList.on('list-full', self, function () {
                 $modal.find('input[name=seo_page_keywords]')
@@ -153,6 +160,7 @@
         update: function () {
             var self = this;
             var data = {};
+            var error = null;
             if (self.canEditTitle) {
                 data.website_meta_title = this.$('input[name=seo_page_title]').val(); //self.htmlPage.title();
             }
@@ -166,18 +174,37 @@
                 data.website_meta_robots = this.$('select[name=seo_page_robots]').val(); //self.htmlPage.robots();
             }
             if (self.canEditSeoUrl) {
-                data.seo_url = this.$('input[name=seo_url]').val(); //self.htmlPage.seo_url();
-            }
+                var seo_url_regex = /^([.a-zA-Z0-9-_]+)$/;
+                var seo_url = this.$('input[name=seo_url]').val(); //self.htmlPage.seo_url();
 
-            self.saveMetaData(data).then(function() {
-                self.$el.modal('hide');
-                self.$('#seo-language-box').val(website.get_context().lang);
-                self.getSeoPath().then(function(seo_path) {
-                    if (seo_path) {
-                        location.replace(seo_path, 301);
+                if (seo_url && !error && !seo_url.match(seo_url_regex)) {
+                    error = _t("Invalid SEO URL. The allowed characters are a-z, A-Z, 0-9, - and _.");
+                }
+                if (!error && self.known_urls.indexOf(seo_url) >= 0) {
+                    error = _.str.sprintf(_t("The SEO URL '%s' is already taken in the application."), seo_url);
+                }
+                if (error) {
+                    var div_error = self.$('.js_seo_url_tips');
+                    if (div_error.children().length > 0) {
+                        div_error.children()[0].remove();
                     }
+                    new website.seo.Tip(self, {message: error, type: 'danger'}).appendTo(div_error);
+                }
+                else {
+                    data.seo_url = seo_url;
+                }
+            }
+            if (!error) {
+                self.saveMetaData(data).then(function() {
+                    self.$el.modal('hide');
+                    self.$('#seo-language-box').val(website.get_context().lang);
+                    self.getSeoPath().then(function(seo_path) {
+                        if (seo_path) {
+                            location.replace(seo_path, 301);
+                        }
+                    });
                 });
-            });
+            }
         },
         getSeoPath: function () {
             var self = this;
