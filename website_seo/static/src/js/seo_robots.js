@@ -31,6 +31,35 @@
         },
     });
 
+    website.seo.Suggestion = openerp.Widget.extend({
+        template: 'website.seo_suggestion',
+        events: {
+            'click .js_seo_suggestion': 'select',
+        },
+        init: function (parent, options) {
+            this.root = options.root;
+            this.keyword = options.keyword;
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            this.htmlPage.on('title-changed', this, this.renderElement);
+            this.htmlPage.on('description-changed', this, this.renderElement);
+        },
+        analyze: function () {
+            return analyzeKeyword(this.htmlPage, this.keyword);
+        },
+        highlight: function () {
+            return this.analyze().title;
+        },
+        tooltip: function () {
+            return this.analyze().description;
+        },
+        select: function () {
+            this.trigger('selected', this.keyword);
+        },
+    });
+
     website.seo.Configurator.include({
         events: {
             'keyup input[name=seo_page_keywords]': 'confirmKeyword',
