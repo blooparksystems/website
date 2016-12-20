@@ -117,6 +117,7 @@
         maxWordsPerKeyword: 4, // TODO Check
         init: function (parent, options) {
             this.keyword = options.word;
+            this.language = options.language;
             this.htmlPage = options.page;
             this._super(parent);
         },
@@ -125,10 +126,11 @@
             this.htmlPage.on('description-changed', this, this.updateLabel);
             this.suggestionList = new website.seo.SuggestionList(this, {
                 root: this.keyword,
+                language: this.language,
                 page: this.htmlPage,
             });
-            this.suggestionList.on('selected', this, function (word) {
-                this.trigger('selected', word);
+            this.suggestionList.on('selected', this, function (word, language) {
+                this.trigger('selected', word, language);
             });
             this.suggestionList.appendTo(this.$('.js_seo_keyword_suggestion'));
         },
@@ -151,7 +153,6 @@
             this._super();
         },
     });
-
 
     website.seo.Configurator.include({
         events: {
