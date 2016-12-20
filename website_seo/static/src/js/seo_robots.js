@@ -109,6 +109,50 @@
         },
     });
 
+    website.seo.Keyword = openerp.Widget.extend({
+        template: 'website.seo_keyword',
+        events: {
+            'click a[data-action=remove-keyword]': 'destroy',
+        },
+        maxWordsPerKeyword: 4, // TODO Check
+        init: function (parent, options) {
+            this.keyword = options.word;
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            this.htmlPage.on('title-changed', this, this.updateLabel);
+            this.htmlPage.on('description-changed', this, this.updateLabel);
+            this.suggestionList = new website.seo.SuggestionList(this, {
+                root: this.keyword,
+                page: this.htmlPage,
+            });
+            this.suggestionList.on('selected', this, function (word) {
+                this.trigger('selected', word);
+            });
+            this.suggestionList.appendTo(this.$('.js_seo_keyword_suggestion'));
+        },
+        analyze: function () {
+            return analyzeKeyword(this.htmlPage, this.keyword);
+        },
+        highlight: function () {
+            return this.analyze().title;
+        },
+        tooltip: function () {
+            return this.analyze().description;
+        },
+        updateLabel: function () {
+            var cssClass = "oe_seo_keyword js_seo_keyword " + this.highlight();
+            this.$(".js_seo_keyword").attr('class', cssClass);
+            this.$(".js_seo_keyword").attr('title', this.tooltip());
+        },
+        destroy: function () {
+            this.trigger('removed');
+            this._super();
+        },
+    });
+
+
     website.seo.Configurator.include({
         events: {
             'keyup input[name=seo_page_keywords]': 'confirmKeyword',
