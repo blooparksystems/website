@@ -154,6 +154,64 @@
         },
     });
 
+    website.seo.KeywordList = openerp.Widget.extend({
+        template: 'website.seo_list',
+        maxKeywords: 10,
+        init: function (parent, options) {
+            this.htmlPage = options.page;
+            this._super(parent);
+        },
+        start: function () {
+            var self = this;
+            var existingKeywords = self.htmlPage.keywords();
+            if (existingKeywords.length > 0) {
+                _.each(existingKeywords, function (word) {
+                    self.add.call(self, word);
+                });
+            } else {
+                var companyName = self.htmlPage.company().toLowerCase();
+                if (companyName != 'yourcompany') {
+                    self.add(companyName);
+                }
+            }
+        },
+        keywords: function () {
+            var result = [];
+            this.$('.js_seo_keyword').each(function () {
+                result.push($(this).data('keyword'));
+            });
+            return result;
+        },
+        isFull: function () {
+            return this.keywords().length >= this.maxKeywords;
+        },
+        exists: function (word) {
+            return _.contains(this.keywords(), word);
+        },
+        add: function (candidate) {
+            var self = this;
+            // TODO Refine
+            var word = candidate ? candidate.replace(/[,;.:<>]+/g, " ").replace(/ +/g, " ").trim().toLowerCase() : "";
+            if (word && !self.isFull() && !self.exists(word)) {
+                var keyword = new website.seo.Keyword(self, {
+                    word: word,
+                    page: this.htmlPage,
+                });
+                keyword.on('removed', self, function () {
+                   self.trigger('list-not-full');
+                   self.trigger('removed', word);
+                });
+                keyword.on('selected', self, function (word) {
+                    self.trigger('selected', word);
+                });
+                keyword.appendTo(self.$el);
+            }
+            if (self.isFull()) {
+                self.trigger('list-full');
+            }
+        },
+    });
+
     website.seo.Configurator.include({
         events: {
             'keyup input[name=seo_page_keywords]': 'confirmKeyword',
