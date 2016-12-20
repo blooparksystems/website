@@ -39,6 +39,7 @@
         init: function (parent, options) {
             this.root = options.root;
             this.keyword = options.keyword;
+            this.language = options.language;
             this.htmlPage = options.page;
             this._super(parent);
         },
