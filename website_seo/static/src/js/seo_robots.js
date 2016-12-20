@@ -188,21 +188,22 @@
         exists: function (word) {
             return _.contains(this.keywords(), word);
         },
-        add: function (candidate) {
+        add: function (candidate, language) {
             var self = this;
             // TODO Refine
             var word = candidate ? candidate.replace(/[,;.:<>]+/g, " ").replace(/ +/g, " ").trim().toLowerCase() : "";
             if (word && !self.isFull() && !self.exists(word)) {
                 var keyword = new website.seo.Keyword(self, {
                     word: word,
+                    language: language,
                     page: this.htmlPage,
                 });
                 keyword.on('removed', self, function () {
                    self.trigger('list-not-full');
                    self.trigger('removed', word);
                 });
-                keyword.on('selected', self, function (word) {
-                    self.trigger('selected', word);
+                keyword.on('selected', self, function (word, language) {
+                    self.trigger('selected', word, language);
                 });
                 keyword.appendTo(self.$el);
             }
