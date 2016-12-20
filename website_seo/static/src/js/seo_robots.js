@@ -65,6 +65,7 @@
         template: 'website.seo_suggestion_list',
         init: function (parent, options) {
             this.root = options.root;
+            this.language = options.language;
             this.htmlPage = options.page;
             this._super(parent);
         },
@@ -73,33 +74,40 @@
         },
         refresh: function () {
             var self = this;
-            self.$el.append("Loading...");
-            function addSuggestions (list) {
-                self.$el.empty();
-                // TODO Improve algorithm + Ajust based on custom user keywords
-                var regex = new RegExp(self.root, "gi");
-                var cleanList = _.map(list, function (word) {
-                    return word.replace(regex, "").trim();
-                });
-                // TODO Order properly ?
-                _.each(_.uniq(cleanList), function (keyword) {
-                    if (keyword) {
-                        var suggestion = new website.seo.Suggestion(self, {
-                            root: self.root,
-                            keyword: keyword,
-                            page: self.htmlPage,
-                        });
-                        suggestion.on('selected', self, function (word) {
-                            self.trigger('selected', word);
-                        });
-                        suggestion.appendTo(self.$el);
-                    }
-                });
-            }
-            $.getJSON("/website/seo_suggest/" + encodeURIComponent(this.root + " "), addSuggestions);
+            self.$el.append(_t("Loading..."));
+            var language = self.language || website.get_context().lang.toLowerCase();
+            openerp.jsonRpc('/website/seo_suggest', 'call', {
+                'keywords': self.root,
+                'lang': language,
+            }).then(function(keyword_list){
+                self.addSuggestions(JSON.parse(keyword_list));
+            });
+        },
+        addSuggestions: function(keywords) {
+            var self = this;
+            self.$el.empty();
+            // TODO Improve algorithm + Ajust based on custom user keywords
+            var regex = new RegExp(self.root, "gi");
+            var keywords = _.map(_.uniq(keywords), function (word) {
+                return word.replace(regex, "").trim();
+            });
+            // TODO Order properly ?
+            _.each(keywords, function (keyword) {
+                if (keyword) {
+                    var suggestion = new website.seo.Suggestion(self, {
+                        root: self.root,
+                        language: self.language,
+                        keyword: keyword,
+                        page: self.htmlPage,
+                    });
+                    suggestion.on('selected', self, function (word, language) {
+                        self.trigger('selected', word, language);
+                    });
+                    suggestion.appendTo(self.$el);
+                }
+            });
         },
     });
-
 
     website.seo.Configurator.include({
         events: {
