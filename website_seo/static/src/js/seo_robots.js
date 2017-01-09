@@ -31,6 +31,26 @@
         },
     });
 
+    // This replaces \b, because accents(e.g. à, é) are not seen as word boundaries.
+    // Javascript \b is not unicode aware, and words beginning or ending by accents won't match \b
+    var WORD_SEPARATORS_REGEX = '([\\u2000-\\u206F\\u2E00-\\u2E7F\'!"#\\$%&\\(\\)\\*\\+,\\-\\.\\/:;<=>\\?¿¡@\\[\\]\\^_`\\{\\|\\}~\\s]+|^|$)';
+
+    function analyzeKeyword(htmlPage, keyword) {
+        return  htmlPage.isInTitle(keyword) ? {
+                    title: 'label label-primary',
+                    description: "This keyword is used in the page title",
+                } : htmlPage.isInDescription(keyword) ? {
+                    title: 'label label-info',
+                    description: "This keyword is used in the page description",
+                } : htmlPage.isInBody(keyword) ? {
+                    title: 'label label-info',
+                    description: "This keyword is used in the page content."
+                } : {
+                    title: 'label label-default',
+                    description: "This keyword is not used anywhere on the page."
+                };
+    }
+
     website.seo.Suggestion = openerp.Widget.extend({
         template: 'website.seo_suggestion',
         events: {
