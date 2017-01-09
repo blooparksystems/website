@@ -9,6 +9,38 @@
 
 
   <t t-extend="website.seo_configuration">
+
+    <t t-jquery="section.js_seo_keywords_list" t-operation="replace">
+        <section class="js_seo_keywords_list">
+            <h3 class="page-header mt16">1. Define Keywords <small>describing your page content</small></h3>
+            <div class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label for="seo_page_keywords" class="col-sm-3 control-label">Add keyword:</label>
+                    <div class="col-sm-4">
+                        <div>
+                            <input type="text" name="seo_page_keywords" class="form-control" maxlength="30"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt8">
+                    <label for="seo_page_language" class="col-sm-3 control-label">Language:</label>
+                    <div>
+                        <div class="col-sm-4">
+                            <select name="seo_page_language" id="language-box" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt8">
+                    <div class="col-md-10 text-center">
+                        <button data-action="add" class="btn btn-default" type="button">Add</button>
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted">Most searched topics related to your keywords, ordered by importance:</span>
+            <!-- filled in JS -->
+        </section>
+    </t>
+
     <t t-jquery="section div.form-horizontal.mt16" t-operation="replace">
         <div class="form-horizontal mt16" role="form">
 

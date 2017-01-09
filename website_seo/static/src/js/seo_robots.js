@@ -222,6 +222,7 @@
             'keyup input[name=seo_url]': 'seoUrlChanged',
             'click button[data-action=add]': 'addKeyword',
             'click button[data-action=update]': 'update',
+            'change select[name=seo_url_page_language]': 'changeLanguage',
             'hidden.bs.modal': 'destroy'
         },
         canEditRobots: false,
@@ -265,8 +266,8 @@
                 $modal.find('button[data-action=add]')
                     .prop('disabled', false).removeClass('disabled');
             });
-            self.keywordList.on('selected', self, function(word) {
-                self.keywordList.add(word);
+            self.keywordList.on('selected', self, function (word, language) {
+                self.keywordList.add(word, language);
             });
             self.keywordList.appendTo($modal.find('.js_seo_keywords_list'));
             self.disableUnsavableFields();
@@ -338,6 +339,14 @@
             else {
                 tip.children()[0].remove();
             }
+        },
+        addKeyword: function (word) {
+            var $input = this.$('input[name=seo_page_keywords]');
+            var $language = this.$('select[name=seo_page_language]');
+            var keyword = _.isString(word) ? word : $input.val();
+            var language = $language.val().toLowerCase();
+            this.keywordList.add(keyword, language);
+            $input.val("");
         },
         update: function () {
             var self = this;
@@ -506,6 +515,17 @@
         },
         getCurrentLanguage: function () {
             return this.$('#seo-language-box').val();
+        },
+        changeLanguage: function() {
+            var self = this;
+            this.loadMetaData().then(function(data){
+                var $modal = self.$el;
+                $modal.find('input[name=seo_page_title]').val(data.website_meta_title);
+                $modal.find('textarea[name=seo_page_description]').val(data.website_meta_description || '');
+                $modal.find('select[name=seo_page_robots]').val(data.website_meta_robots);
+                $modal.find('input[name=seo_url]').val(data.seo_url || '');
+                self.renderPreview();
+            });
         }
     });
 
