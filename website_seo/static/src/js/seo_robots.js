@@ -80,7 +80,7 @@
                 'keywords': self.root,
                 'lang': language,
             }).then(function(keyword_list){
-                self.addSuggestions(JSON.parse(keyword_list));
+                self.addSuggestions(keyword_list);
             });
         },
         addSuggestions: function(keywords) {

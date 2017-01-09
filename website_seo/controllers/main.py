@@ -91,7 +91,7 @@ class Website(Website):
             pass
         return super(Website, self).page(page, **opt)
 
-    @http.route()
+    @http.route(['/website/seo_suggest'], type='json', auth='user', website=True)
     def seo_suggest(self, keywords=None, lang=None):
         url = "http://google.com/complete/search"
         try:
@@ -105,7 +105,7 @@ class Website(Website):
                 language = lang.split("_")
                 params.update({
                     'hl': language[0],
-                    'gl': language[1]
+                    'gl': language[1] if len(language) > 1 else ''
                 })
             req = urllib2.Request("%s?%s" % (url, werkzeug.url_encode(params)))
             request = urllib2.urlopen(req)
@@ -113,4 +113,4 @@ class Website(Website):
             # TODO: shouldn't this return {} ?
             return []
         xmlroot = ET.fromstring(request.read())
-        return json.dumps([sugg[0].attrib['data'] for sugg in xmlroot if len(sugg) and sugg[0].attrib['data']])
+        return [sugg[0].attrib['data'] for sugg in xmlroot if len(sugg) and sugg[0].attrib['data']]
