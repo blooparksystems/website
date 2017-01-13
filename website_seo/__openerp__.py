@@ -29,8 +29,10 @@
     'depends': ['website'],
     'data': [
         'data/website_seo_data.xml',
+        'data/ir.model.access.csv',
         'views/header.xml',
         'views/ir_ui_view.xml',
+        'views/website.xml',
         'views/res_lang.xml',
         'views/res_config.xml',
         'views/website_templates.xml'

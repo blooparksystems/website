@@ -1,55 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates id="template" xml:space="preserve">
 
-  <t t-name="website.seo_configuration_content">
-    <div class="form-horizontal mt16" role="form">
-      <div class="js_seo_website_meta_title_tips"/>
-      <div class="form-group">
-        <label for="seo_page_title" class="col-lg-2 control-label">Page Title</label>
-        <div class="col-lg-8">
-            <input type="text" name="seo_page_title" class="form-control" maxlength="70" size="70"/>
-        </div>
-        <div id="title_tip">
-            <img class="oe_field_translate oe_input_icon" src="/web/static/src/img/iconset-a-help.png" width="16" height="16" border="0"/>
-        </div>
-      </div>
-
-      <div class="js_seo_website_meta_description_tips"/>
-      <div class="form-group">
-        <label for="seo_page_description" class="col-lg-2 control-label">Description</label>
-        <div class="col-lg-8">
-            <textarea name="seo_page_description" class="form-control" rows="3" cols="70" t-att-maxlength="widget.maxDescriptionSize"/>
-        </div>
-        <div id="description_tip">
-            <img class="oe_field_translate oe_input_icon" src="/web/static/src/img/iconset-a-help.png" width="16" height="16" border="0"/>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="seo_page_robots" class="col-lg-2 control-label">Robots Content</label>
-        <div class="col-lg-8">
-          <select name="seo_page_robots" class="form-control">
-            <option value="INDEX,FOLLOW">INDEX,FOLLOW</option>
-            <option value="NOINDEX,FOLLOW">NOINDEX,FOLLOW</option>
-            <option value="INDEX,NOFOLLOW">INDEX,NOFOLLOW</option>
-            <option value="NOINDEX,NOFOLLOW">NOINDEX,NOFOLLOW</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-          <label for="seo_url" class="col-lg-2 control-label">SEO URL</label>
-          <div class="col-lg-8">
-              <input type="text" name="seo_url" class="form-control" maxlength="70" size="70"/>
-          </div>
-      </div>
-
-    </div>
+  <t t-name="Configurator.language_promote">
+      <t t-foreach="language" t-as="lang">
+          <option t-att-value="lang[0]" t-att-selected="lang[0] == def_lang ? 'selected' : null"><t t-esc="lang[1]" /></option>
+      </t>
   </t>
-  
+
+
   <t t-extend="website.seo_configuration">
+
+    <t t-jquery="section.js_seo_keywords_list" t-operation="replace">
+        <section class="js_seo_keywords_list">
+            <h3 class="page-header mt16">1. Define Keywords <small>describing your page content</small></h3>
+            <div class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label for="seo_page_keywords" class="col-sm-3 control-label">Add keyword:</label>
+                    <div class="col-sm-4">
+                        <div>
+                            <input type="text" name="seo_page_keywords" class="form-control" maxlength="30"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt8">
+                    <label for="seo_page_language" class="col-sm-3 control-label">Language:</label>
+                    <div>
+                        <div class="col-sm-4">
+                            <select name="seo_page_language" id="language-box" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt8">
+                    <div class="col-md-10 text-center">
+                        <button data-action="add" class="btn btn-default" type="button">Add</button>
+                    </div>
+                </div>
+            </div>
+            <span class="text-muted">Most searched topics related to your keywords, ordered by importance:</span>
+            <!-- filled in JS -->
+        </section>
+    </t>
+
     <t t-jquery="section div.form-horizontal.mt16" t-operation="replace">
-      <t t-call="website.seo_configuration_content"/>
+        <div class="form-horizontal mt16" role="form">
+
+          <div class="alert alert-warning">
+              This form will save only the configuration for the selected language. If you change the language before save the SEO information recently changed will be lost.
+          </div>
+
+          <div class="form-group">
+              <label for="seo_url_page_language" class="col-lg-2 control-label">Language:</label>
+              <div class="col-lg-8">
+                  <select name="seo_url_page_language" id="seo-language-box" class="form-control"/>
+              </div>
+          </div>
+
+          <div class="js_seo_website_meta_title_tips" />
+          <div class="form-group">
+            <label for="seo_page_title" class="col-lg-2 control-label">Page Title</label>
+            <div class="col-lg-8">
+                <input type="text" name="seo_page_title" class="form-control" maxlength="70" size="70"/>
+            </div>
+            <div id="title_tip">
+                <img class="oe_field_translate oe_input_icon" src="/web/static/src/img/iconset-a-help.png" width="16" height="16" border="0"/>
+            </div>
+          </div>
+
+          <div class="js_seo_website_meta_description_tips" />
+          <div class="form-group">
+            <label for="seo_page_description" class="col-lg-2 control-label">Description</label>
+            <div class="col-lg-8">
+                <textarea name="seo_page_description" class="form-control" rows="3" cols="70" t-att-maxlength="widget.maxDescriptionSize"/>
+            </div>
+            <div id="description_tip">
+                <img class="oe_field_translate oe_input_icon" src="/web/static/src/img/iconset-a-help.png" width="16" height="16" border="0"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="seo_page_robots" class="col-lg-2 control-label">Robots Content</label>
+            <div class="col-lg-8">
+              <select name="seo_page_robots" class="form-control">
+                <option value="INDEX,FOLLOW">INDEX,FOLLOW</option>
+                <option value="NOINDEX,FOLLOW">NOINDEX,FOLLOW</option>
+                <option value="INDEX,NOFOLLOW">INDEX,NOFOLLOW</option>
+                <option value="NOINDEX,NOFOLLOW">NOINDEX,NOFOLLOW</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="js_seo_url_tips" />
+          <div class="form-group">
+              <label for="seo_url" class="col-lg-2 control-label">SEO URL</label>
+              <div class="col-lg-8">
+                  <input type="text" name="seo_url" class="form-control" maxlength="70" size="70"/>
+              </div>
+          </div>
+
+      </div>
     </t>
   </t>
 

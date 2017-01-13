@@ -36,6 +36,8 @@ META_ROBOTS = [
     ('NOINDEX,NOFOLLOW', 'NOINDEX,NOFOLLOW')
 ]
 
+KNOWN_URLS =[]
+
 
 def slug(value):
     """Add seo url check in slug handling."""
@@ -213,10 +215,16 @@ class WebsiteSeoMetadata(models.Model):
     seo_url = fields.Char(
         string='SEO Url', translate=True, help='If you fill out this field '
         'manually the allowed characters are a-z, A-Z, 0-9, - and _.')
-    seo_url_redirect = fields.Char(string='SEO Url Redirect', translate=True)
+    seo_url_redirect = fields.One2many(compute='_get_seo_url_redirect',
+                                       comodel_name='website.seo.redirect',
+                                       string='SEO Url Redirect', translate=True)
     website_meta_robots = fields.Selection(META_ROBOTS,
                                            string='Website meta robots',
                                            translate=True)
+
+    def _get_seo_url_redirect(self):
+        resource = '%s,%s' % (self.name, str(self.id))
+        return self.env['website.seo.redirect'].search([('resource', '=', resource)])
 
     @api.model
     def create(self, vals):
@@ -238,16 +246,29 @@ class WebsiteSeoMetadata(models.Model):
         """
         if vals.get('seo_url', False):
             self.validate_seo_url(vals['seo_url'])
+        if vals.get('seo_url', False) or vals.get('seo_url_parent', False):
             for obj in self:
-                if obj.seo_url:
-                    seo_url = obj.get_seo_path()[0]
-                    if obj.seo_url_redirect:
-                        vals['seo_url_redirect'] = '%s,%s' % (obj.seo_url_redirect, seo_url)
-                    else:
-                        vals['seo_url_redirect'] = seo_url
+                obj.update_seo_redirect()
                 super(WebsiteSeoMetadata, obj).write(vals)
             return True
         return super(WebsiteSeoMetadata, self).write(vals)
+
+    def update_seo_redirect(self):
+        # TODO: includes the case when the seo_url is added for first time
+        # and the url '/page/...' must be saved to redirect
+        if self.seo_url:
+            seo_url = self.get_seo_path()[0]
+            if seo_url not in [x.url for x in self.seo_url_redirect]:
+                lang = self.env.context.get('lang', False)
+                if not lang:
+                    lang = self.env['website'].get_current_website().default_lang_code
+                lang = self.env['res.lang'].get_code_from_alias(lang)
+                redirect = {
+                    'url': seo_url,
+                    'lang': lang,
+                    'resource': '%s,%s' % (self._name, self.id)
+                }
+                self.env['website.seo.redirect'].create(redirect)
 
     def validate_seo_url(self, seo_url):
         """Validate a manual entered SEO url."""
@@ -270,6 +291,37 @@ class WebsiteSeoMetadata(models.Model):
         domain = [('field', '=', field)]
         obj = self.env['website.seo.information'].search(domain)
         return obj and obj[0].information or False
+
+    def _check_known_urls(self, cr, uid, ids, context=None):
+        for seo in self.browse(cr, uid, ids, context=context):
+            if seo.seo_url in KNOWN_URLS:
+                return False
+        return True
+
+    _constraints = [
+        (_check_known_urls, "The URL already exists in Odoo.", ['seo_url']),
+    ]
+
+    @api.model
+    def get_known_seo_urls(self):
+        return KNOWN_URLS
+
+
+class WebsiteSeoRedirect(models.Model):
+    """Class used to store old urls for each resource. With these urls the
+       website can do redirect 301 if some url has changed.
+
+       The field 'resource' can't be a strong reference because
+       the model website.seo.metadata is used to inherit and the fields
+       actually are in the resources (eg. ir.ui.view, blog.blog).
+    """
+
+    _name = 'website.seo.redirect'
+
+    url = fields.Char(string='URL')
+    lang = fields.Char(string='Lang')
+    resource = fields.Char(string='Resource', help='This field use the format model,id')
+
 
 
 class WebsiteSeoInformation(models.Model):

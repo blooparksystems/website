@@ -18,6 +18,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
+import json
+import xml.etree.ElementTree as ET
+
+import urllib2
+import werkzeug.utils
+
 from openerp.addons.web import http
 from openerp.addons.web.http import request
 from openerp.addons.website.controllers.main import Website
@@ -60,13 +67,19 @@ class Website(Website):
         return request.render(page, {})
 
     def look_for_redirect_url(self, seo_url, **kwargs):
-        domain = ['|', ('seo_url_redirect', '!=', False), ('seo_url', '=', seo_url)]
-        for view in request.env['ir.ui.view'].search(domain):
-            if not seo_url.startswith('/'):
-                seo_url = '/%s' % seo_url
-            if not view.seo_url_redirect or (seo_url in view.seo_url_redirect.split(',')):
-                return view.get_seo_path()[0]
-        return False
+        env = request.env(context=request.context)
+        if not seo_url.startswith('/'):
+            seo_url = '/' + seo_url
+        lang = env.context.get('lang', False)
+        if not lang:
+            lang = request.website.default_lang_code
+        lang = env['res.lang'].get_code_from_alias(lang)
+        domain = [('url', '=', seo_url), ('lang', '=', lang)]
+        data = env['website.seo.redirect'].search(domain)
+        if data:
+            model, rid = data[0].resource.split(',')
+            resource = env[model].browse(int(rid))
+            return resource.get_seo_path()[0]
 
     @http.route()
     def page(self, page, **opt):
@@ -77,3 +90,27 @@ class Website(Website):
         except:
             pass
         return super(Website, self).page(page, **opt)
+
+    @http.route(['/website/seo_suggest'], type='json', auth='user', website=True)
+    def seo_suggest(self, keywords=None, lang=None):
+        url = "http://google.com/complete/search"
+        try:
+            params = {
+                'ie': 'utf8',
+                'oe': 'utf8',
+                'output': 'toolbar',
+                'q': keywords,
+            }
+            if lang:
+                language = lang.split("_")
+                params.update({
+                    'hl': language[0],
+                    'gl': language[1] if len(language) > 1 else ''
+                })
+            req = urllib2.Request("%s?%s" % (url, werkzeug.url_encode(params)))
+            request = urllib2.urlopen(req)
+        except (urllib2.HTTPError, urllib2.URLError):
+            # TODO: shouldn't this return {} ?
+            return []
+        xmlroot = ET.fromstring(request.read())
+        return [sugg[0].attrib['data'] for sugg in xmlroot if len(sugg) and sugg[0].attrib['data']]

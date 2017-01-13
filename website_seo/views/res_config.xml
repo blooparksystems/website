@@ -11,6 +11,9 @@
           <group string="SEO Pages">
             <button type="action" name="%(website_seo.action_website_seo_pages)d" string="Configure SEO pages" class="oe_link"/>
           </group>
+          <group string="SEO Redirects">
+            <button type="action" name="%(website_seo.action_website_seo_redirect)d" string="Configure SEO redirects" class="oe_link"/>
+          </group>
         </xpath>
       </field>
     </record>
