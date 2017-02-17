@@ -1,4 +1,0 @@
-"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
-access_seo_redirect_designer,access_seo_redirect_designer,model_website_seo_redirect,base.group_website_designer,1,1,1,1
-access_seo_information_designer,access_seo_information_designer,model_website_seo_information,base.group_website_designer,1,1,1,1
-access_seo_redirect_public,access_seo_redirect_public,model_website_seo_redirect,,1,0,0,0
