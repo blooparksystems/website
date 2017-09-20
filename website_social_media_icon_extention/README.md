@@ -1,13 +1,16 @@
 
 <center>
 <a href="http://www.xing.com/">
-<img class="oe_picture" width="100" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/XING.png">
+<img class="oe_picture" style="max-height:100px;max-width:100px;" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/XING.png">
 </a>
 <a href="https://dribbble.com/">
-<img class="oe_picture" width="100" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/dribbble.png">
+<img class="oe_picture" style="max-height:100px;max-width:100px;" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/dribbble.png">
 </a>
 <a href="http://www.tripadvisor.de/">
-<img class="oe_picture" width="100" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/tripadvisor.jpg">
+<img class="oe_picture" style="max-height:100px;max-width:100px;" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/tripadvisor.jpg">
+</a>
+<a href="http://www.instagram.com/">
+<img class="oe_picture" style="max-height:100px;max-width:100px;" src="https://raw.githubusercontent.com/blooparksystems/website/8.0/website_social_media_icon_extention/static/description/instagram.jpg">
 </a>
 
 Extend Social Media Links
@@ -18,7 +21,7 @@ Extend Social Media Links
 
 Currently added:
 
-Xing / Dribbble / Tripadvisor
+Xing / Dribbble / Tripadvisor / Instagram
 
 </center>
 
@@ -51,6 +54,8 @@ integration example:
        t-if="website.social_dribbble"><i class="fa fa-dribbble"/></a>
 	<a t-att-href="website.social_tripadvisor" 
        t-if="website.social_tripadvisor"><i class="fa fa-tripadvisor"/></a>
+    <a t-att-href="website.social_instagram"
+       t-if="website.social_instagram"><i class="fa fa-instagram"/></a>
 	
 
 <a href="http://www.bloopark.de/">

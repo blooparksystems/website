@@ -31,3 +31,4 @@ class Website(Model):
     social_dribbble = fields.Char('Dribbble Account')
     social_xing = fields.Char('Xing Account')
     social_tripadvisor = fields.Char('Tripadvisor Account')
+    social_instagram = fields.Char('Instagram Account')

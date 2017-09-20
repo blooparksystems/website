@@ -33,6 +33,13 @@
                      placeholder="http://tripadvisor.de"/>
             </div>
           </div>
+          <label for="social_instagram"/>
+          <div name="social_instagram">
+            <div class="oe_inline">
+              <field name="social_instagram"
+                     placeholder="http://instagram.com"/>
+            </div>
+          </div>
 
         </xpath>
       </field>

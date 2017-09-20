@@ -19,6 +19,8 @@
                  placeholder="http://dribbble.com"/>
           <field name="social_tripadvisor"
                  placeholder="http://tripadvisor.de"/>
+          <field name="social_instagram"
+                 placeholder="http://instagram.com"/>
 
         </field>
       </field>

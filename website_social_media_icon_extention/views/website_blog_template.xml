@@ -20,6 +20,10 @@
            t-if="website.social_tripadvisor">
           <i class="fa fa-tripadvisor"></i>
         </a>
+        <a t-att-href="website.social_instagram"
+           t-if="website.social_instagram">
+          <i class="fa fa-instagram"></i>
+        </a>
 
       </xpath>
     </template>

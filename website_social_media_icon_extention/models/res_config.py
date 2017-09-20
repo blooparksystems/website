@@ -34,3 +34,5 @@ class WebsiteConfigSettings(TransientModel):
                                   related='website_id.social_dribbble')
     social_tripadvisor = fields.Char('Tripadvisor Account',
                                      related='website_id.social_tripadvisor')
+    social_instagram = fields.Char('Instragram Account',
+                                   related='website_id.social_instagram')
