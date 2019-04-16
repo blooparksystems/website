@@ -57,9 +57,13 @@ class Website(Website):
                 page = current_view.xml_id
 
         if page == 'website.404':
-            url = self.look_for_redirect_url(seo_url, **kwargs)
-            if url:
-                return request.redirect(url, code=301)
+            try:
+                url = self.look_for_redirect_url(seo_url, **kwargs)
+                if url:
+                    return request.redirect(url, code=301)
+                assert url is not None
+            except Exception, e:
+                return request.registry['ir.http']._handle_exception(e, 404)
 
         if page == 'website.404' and request.website.is_publisher():
             page = 'website.page_404'
